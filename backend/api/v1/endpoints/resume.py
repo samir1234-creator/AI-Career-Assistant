@@ -2,9 +2,11 @@ import os
 import tempfile
 from fastapi import APIRouter, UploadFile, File, Request
 from domain.schemas.resume import ResumeParseData
+from domain.schemas.extraction import ExtractionRequest, ResumeExtractionData
 from services.resume_service import ResumeService
+from services.extraction_service import ExtractionService
 from core.response import BaseResponse
-from core.exceptions import FileValidationException
+from core.exceptions import FileValidationException, AppException
 from utils.file_validators import validate_pdf_magic_bytes, validate_file_size
 from core.config import settings
 
@@ -46,3 +48,21 @@ async def upload_resume(request: Request, file: UploadFile = File(...)):
         # Ensure cleanup even if an exception occurs
         if temp_file_path and os.path.exists(temp_file_path):
             os.remove(temp_file_path)
+
+@router.post(
+    "/extract",
+    response_model=BaseResponse[ResumeExtractionData],
+    summary="Extract structured information from resume text",
+    description="Accepts raw resume text, parses sections and fields (name, email, phone, linkedin, skills, education, projects, certifications), and returns structured JSON details."
+)
+async def extract_resume_info(payload: ExtractionRequest):
+    try:
+        extracted_data = ExtractionService.extract_information(payload.text_content)
+        return BaseResponse(
+            success=True,
+            data=extracted_data,
+            message="Resume information extracted successfully."
+        )
+    except Exception as e:
+        raise AppException(message=f"Failed to extract information: {str(e)}", status_code=500)
+

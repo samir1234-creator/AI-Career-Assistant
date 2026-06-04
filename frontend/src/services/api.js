@@ -31,3 +31,22 @@ export const uploadResume = async (file, onProgress) => {
     throw new Error(ERROR_MESSAGES.NETWORK_ERROR);
   }
 };
+
+export const extractResumeInfo = async (textContent) => {
+  try {
+    const response = await axios.post(`${CONFIG.API_URL}/resume/extract`, {
+      text_content: textContent,
+    });
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Extraction failed');
+    }
+    
+    return response.data.data;
+  } catch (error) {
+    if (error.response && error.response.data && error.response.data.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw new Error(ERROR_MESSAGES.NETWORK_ERROR);
+  }
+};
