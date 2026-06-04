@@ -26,9 +26,9 @@ export const uploadResume = async (file, onProgress) => {
     return response.data.data;
   } catch (error) {
     if (error.response && error.response.data && error.response.data.message) {
-      throw new Error(error.response.data.message);
+      throw new Error(error.response.data.message, { cause: error });
     }
-    throw new Error(ERROR_MESSAGES.NETWORK_ERROR);
+    throw new Error(ERROR_MESSAGES.NETWORK_ERROR, { cause: error });
   }
 };
 
@@ -45,8 +45,27 @@ export const extractResumeInfo = async (textContent) => {
     return response.data.data;
   } catch (error) {
     if (error.response && error.response.data && error.response.data.message) {
-      throw new Error(error.response.data.message);
+      throw new Error(error.response.data.message, { cause: error });
     }
-    throw new Error(ERROR_MESSAGES.NETWORK_ERROR);
+    throw new Error(ERROR_MESSAGES.NETWORK_ERROR, { cause: error });
+  }
+};
+
+export const classifySkills = async (skills) => {
+  try {
+    const response = await axios.post(`${CONFIG.API_URL}/skills/classify`, {
+      skills: skills,
+    });
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Skills classification failed');
+    }
+    
+    return response.data.data;
+  } catch (error) {
+    if (error.response && error.response.data && error.response.data.message) {
+      throw new Error(error.response.data.message, { cause: error });
+    }
+    throw new Error(ERROR_MESSAGES.NETWORK_ERROR, { cause: error });
   }
 };

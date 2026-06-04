@@ -1,7 +1,21 @@
 import React, { useState } from 'react';
 import { ResumeUpload } from '../components/ResumeUpload/ResumeUpload';
 import { formatFileSize } from '../utils/formatters';
-import { extractResumeInfo } from '../services/api';
+import { extractResumeInfo, classifySkills } from '../services/api';
+
+const CATEGORY_DISPLAY_NAMES = {
+  'Programming Language': 'Programming Languages',
+  'Frontend Framework': 'Frontend Frameworks',
+  'Backend Framework': 'Backend Frameworks',
+  'Database': 'Databases',
+  'Cloud Computing': 'Cloud Computing',
+  'DevOps': 'DevOps',
+  'Artificial Intelligence': 'Artificial Intelligence',
+  'Data Science': 'Data Science',
+  'Mobile Development': 'Mobile Development',
+  'Tools & Technologies': 'Tools & Technologies',
+  'Other': 'Other / Uncategorized'
+};
 
 // Clean candidate name
 const cleanCandidateName = (name) => {
@@ -28,7 +42,7 @@ const splitConcatenatedSkills = (skillStr) => {
   while (matchFound) {
     matchFound = false;
     for (const kw of sortedKeywords) {
-      const escapedKw = kw.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const escapedKw = kw.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
       const regex = new RegExp(escapedKw, 'i');
       const match = tempStr.match(regex);
       if (match) {
@@ -201,6 +215,7 @@ const parseAdditionalInfoToFields = (lines) => {
 export const AnalyzerPage = () => {
   const [parsedData, setParsedData] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
+  const [enrichedSkills, setEnrichedSkills] = useState([]);
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionError, setExtractionError] = useState(null);
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'raw'
@@ -210,10 +225,21 @@ export const AnalyzerPage = () => {
     setIsExtracting(true);
     setExtractionError(null);
     setExtractedData(null);
+    setEnrichedSkills([]);
     
     try {
       const result = await extractResumeInfo(data.text_content);
       setExtractedData(result);
+      
+      const cleanedSkills = getParsedSkills(result.skills);
+      if (cleanedSkills.length > 0) {
+        try {
+          const classificationResult = await classifySkills(cleanedSkills);
+          setEnrichedSkills(classificationResult.skills || []);
+        } catch (classifyErr) {
+          console.error("Failed to classify skills:", classifyErr);
+        }
+      }
     } catch (err) {
       setExtractionError(err.message || 'Failed to extract structured information.');
     } finally {
@@ -224,9 +250,25 @@ export const AnalyzerPage = () => {
   const handleReset = () => {
     setParsedData(null);
     setExtractedData(null);
+    setEnrichedSkills([]);
     setExtractionError(null);
     setActiveTab('profile');
   };
+
+  const groupedSkills = React.useMemo(() => {
+    if (!enrichedSkills || enrichedSkills.length === 0) return {};
+    
+    const groups = {};
+    enrichedSkills.forEach(skill => {
+      const cat = skill.category || 'Other';
+      if (!groups[cat]) {
+        groups[cat] = [];
+      }
+      groups[cat].push(skill.name);
+    });
+    return groups;
+  }, [enrichedSkills]);
+
 
   const processedData = React.useMemo(() => {
     if (!extractedData) return null;
@@ -394,19 +436,46 @@ export const AnalyzerPage = () => {
                       <h4 className="section-title">
                         <span>🛠️</span> Technical Skills
                       </h4>
-                      {processedData.skills && processedData.skills.length > 0 ? (
-                        <div className="skills-vertical-list">
-                          {processedData.skills.map((skill, index) => (
-                            <div key={index} className="skill-item">
-                              <span className="skill-bullet">•</span>
-                              <span className="skill-text">{skill}</span>
-                            </div>
-                          ))}
+                      {Object.keys(groupedSkills).length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                          {Object.entries(groupedSkills).map(([category, skillsList]) => {
+                            const displayName = CATEGORY_DISPLAY_NAMES[category] || category;
+                            return (
+                              <div key={category} className="skill-category-group">
+                                <h5 className="skill-category-title" style={{ 
+                                  fontSize: '1rem', 
+                                  fontWeight: '600', 
+                                  color: 'var(--text-light)', 
+                                  marginBottom: '0.6rem',
+                                  fontFamily: "'Outfit', sans-serif"
+                                }}>
+                                  {displayName}
+                                </h5>
+                                <div className="skills-container">
+                                  {skillsList.map((skill, index) => (
+                                    <span key={index} className="skill-tag">
+                                      {skill}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       ) : (
-                        <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.95rem' }}>
-                          No technical skills identified in the resume text.
-                        </p>
+                        processedData.skills && processedData.skills.length > 0 ? (
+                          <div className="skills-container">
+                            {processedData.skills.map((skill, index) => (
+                              <span key={index} className="skill-tag">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.95rem' }}>
+                            No technical skills identified in the resume text.
+                          </p>
+                        )
                       )}
                     </div>
 

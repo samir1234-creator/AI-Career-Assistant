@@ -1,5 +1,6 @@
 import { AnalyzerPage } from './pages/AnalyzerPage';
 import { MainLayout } from './layouts/MainLayout';
+import './App.css';
 
 function App() {
   return (
