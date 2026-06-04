@@ -86,3 +86,21 @@ export const getATSScore = async (resumeData) => {
     throw new Error(ERROR_MESSAGES.NETWORK_ERROR, { cause: error });
   }
 };
+
+export const getRecommendations = async (resumeData) => {
+  try {
+    const response = await axios.post(`${CONFIG.API_URL}/career/recommend`, resumeData);
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Career recommendations failed');
+    }
+    
+    return response.data.data;
+  } catch (error) {
+    if (error.response && error.response.data && error.response.data.message) {
+      throw new Error(error.response.data.message, { cause: error });
+    }
+    throw new Error(ERROR_MESSAGES.NETWORK_ERROR, { cause: error });
+  }
+};
+

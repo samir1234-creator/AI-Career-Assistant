@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ResumeUpload } from '../components/ResumeUpload/ResumeUpload';
 import { formatFileSize } from '../utils/formatters';
-import { extractResumeInfo, classifySkills, getATSScore } from '../services/api';
+import { extractResumeInfo, classifySkills, getATSScore, getRecommendations } from '../services/api';
 
 const CATEGORY_DISPLAY_NAMES = {
   'Programming Language': 'Programming Languages',
@@ -212,14 +212,24 @@ const parseAdditionalInfoToFields = (lines) => {
   return fields;
 };
 
+const isSkillMatched = (skillName, candidateSkills) => {
+  if (!skillName || !candidateSkills) return false;
+  const s = skillName.trim().toLowerCase();
+  return candidateSkills.some(cand => {
+    const c = cand.trim().toLowerCase();
+    return c === s || c.includes(s) || s.includes(c);
+  });
+};
+
 export const AnalyzerPage = () => {
   const [parsedData, setParsedData] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
   const [enrichedSkills, setEnrichedSkills] = useState([]);
   const [atsData, setAtsData] = useState(null);
+  const [recommendationsData, setRecommendationsData] = useState(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionError, setExtractionError] = useState(null);
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'ats' or 'raw'
+  const [activeTab, setActiveTab] = useState('profile');
 
   const handleUploadSuccess = async (data) => {
     setParsedData(data);
@@ -228,6 +238,7 @@ export const AnalyzerPage = () => {
     setExtractedData(null);
     setEnrichedSkills([]);
     setAtsData(null);
+    setRecommendationsData(null);
     
     try {
       const result = await extractResumeInfo(data.text_content);
@@ -257,11 +268,28 @@ export const AnalyzerPage = () => {
         achievements: extraSections.achievements || []
       };
 
+      let calculatedAtsScore = 70;
       try {
         const atsResult = await getATSScore(atsPayload);
         setAtsData(atsResult);
+        calculatedAtsScore = atsResult.ats_score;
       } catch (atsErr) {
         console.error("Failed to calculate ATS score:", atsErr);
+      }
+
+      // Request career recommendations using the calculated ATS score
+      try {
+        const recPayload = {
+          skills: cleanedSkills,
+          projects: result.projects || [],
+          education: result.education || [],
+          certifications: result.certifications || [],
+          ats_score: calculatedAtsScore
+        };
+        const recResult = await getRecommendations(recPayload);
+        setRecommendationsData(recResult.recommended_careers || []);
+      } catch (recErr) {
+        console.error("Failed to fetch recommendations:", recErr);
       }
 
     } catch (err) {
@@ -276,6 +304,7 @@ export const AnalyzerPage = () => {
     setExtractedData(null);
     setEnrichedSkills([]);
     setAtsData(null);
+    setRecommendationsData(null);
     setExtractionError(null);
     setActiveTab('profile');
   };
@@ -384,6 +413,12 @@ export const AnalyzerPage = () => {
               onClick={() => setActiveTab('ats')}
             >
               🎯 ATS Feedback
+            </button>
+            <button 
+              className={`tab-button ${activeTab === 'recommendations' ? 'active' : ''}`}
+              onClick={() => setActiveTab('recommendations')}
+            >
+              💼 Career Recommendations
             </button>
             <button 
               className={`tab-button ${activeTab === 'raw' ? 'active' : ''}`}
@@ -511,6 +546,36 @@ export const AnalyzerPage = () => {
                         >
                           View Breakdown &amp; Feedback &rarr;
                         </button>
+                        {recommendationsData && (
+                          <button 
+                            onClick={() => setActiveTab('recommendations')}
+                            style={{
+                              marginTop: '0.5rem',
+                              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                              border: '1px solid rgba(16, 185, 129, 0.2)',
+                              color: '#a7f3d0',
+                              padding: '0.4rem 0.8rem',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              width: '100%',
+                              fontWeight: '600',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.backgroundColor = 'var(--success)';
+                              e.target.style.color = 'var(--text-light)';
+                              e.target.style.borderColor = 'var(--success)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                              e.target.style.color = '#a7f3d0';
+                              e.target.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                            }}
+                          >
+                            View Career Path Insights &rarr;
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -868,6 +933,256 @@ export const AnalyzerPage = () => {
                     </div>
                   </div>
 
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'recommendations' && (
+            <div>
+              {isExtracting && (
+                <div className="loader-container">
+                  <div className="spinner"></div>
+                  <p style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
+                    Analyzing profiles for Career Recommendation...
+                  </p>
+                </div>
+              )}
+
+              {!isExtracting && !recommendationsData && (
+                <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', padding: '2rem', textAlign: 'center' }}>
+                  No recommendations available. Please upload a resume first.
+                </p>
+              )}
+
+              {!isExtracting && recommendationsData && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  
+                  <div style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    border: '1px solid var(--border-color)',
+                    marginBottom: '1rem'
+                  }}>
+                    <h3 style={{ fontSize: '1.35rem', fontWeight: 'bold', color: 'var(--text-light)', marginBottom: '0.5rem', fontFamily: "'Outfit', sans-serif" }}>
+                      💼 Local Career Intelligence Insights
+                    </h3>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                      Based on our localized matching rules, we analyzed your <strong>{processedData.skills.length} skills</strong>, <strong>{processedData.projects.length} projects</strong>, and <strong>ATS score ({atsData?.ats_score ?? 70})</strong>. Here are your top 5 matching career paths, complete with skill gap analysis.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    {recommendationsData.map((career, idx) => {
+                      // Perform skill gap classification
+                      const reqSkillsEnriched = career.required_skills.map(skill => {
+                        const matched = isSkillMatched(skill, processedData.skills);
+                        return { name: skill, matched };
+                      });
+
+                      const prefSkillsEnriched = career.preferred_skills.map(skill => {
+                        const matched = isSkillMatched(skill, processedData.skills);
+                        return { name: skill, matched };
+                      });
+
+                      return (
+                        <div key={idx} className="section-card" style={{ 
+                          padding: '2rem',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}>
+                          {/* Top Rank Badge */}
+                          <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            right: 0,
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderBottomLeftRadius: '12px',
+                            borderLeft: '1px solid var(--border-color)',
+                            borderBottom: '1px solid var(--border-color)',
+                            padding: '0.5rem 1rem',
+                            fontSize: '0.9rem',
+                            fontWeight: 'bold',
+                            color: '#a5b4fc'
+                          }}>
+                            Rank #{idx + 1}
+                          </div>
+
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                            <div>
+                              <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-light)', marginBottom: '0.25rem', fontFamily: "'Outfit', sans-serif" }}>
+                                {career.role}
+                              </h3>
+                              <span style={{ fontSize: '0.85rem', color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '700' }}>
+                                📁 {career.category}
+                              </span>
+                            </div>
+
+                            {/* Match Meter */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold' }}>Match Score</div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: '800', color: career.match_score >= 70 ? 'var(--success)' : career.match_score >= 50 ? '#f59e0b' : 'var(--error)' }}>
+                                  {career.match_score}%
+                                </div>
+                              </div>
+                              <div style={{ 
+                                width: '60px', 
+                                height: '60px', 
+                                borderRadius: '50%', 
+                                background: `conic-gradient(${
+                                  career.match_score >= 70 ? 'var(--success)' : career.match_score >= 50 ? '#f59e0b' : 'var(--error)'
+                                } ${career.match_score * 3.6}deg, rgba(255,255,255,0.06) 0deg)`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}>
+                                <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-light)' }}>
+                                  🎯
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                            {career.description}
+                          </p>
+
+                          {/* Metadata Badges */}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                            <span style={{ 
+                              fontSize: '0.75rem', 
+                              fontWeight: '600', 
+                              backgroundColor: 'rgba(245, 158, 11, 0.08)', 
+                              color: '#f59e0b', 
+                              border: '1px solid rgba(245, 158, 11, 0.2)',
+                              padding: '0.3rem 0.6rem',
+                              borderRadius: '4px'
+                            }}>
+                              ⚡ Difficulty: {career.difficulty_level}
+                            </span>
+                            <span style={{ 
+                              fontSize: '0.75rem', 
+                              fontWeight: '600', 
+                              backgroundColor: 'rgba(16, 185, 129, 0.08)', 
+                              color: 'var(--success)', 
+                              border: '1px solid rgba(16, 185, 129, 0.2)',
+                              padding: '0.3rem 0.6rem',
+                              borderRadius: '4px'
+                            }}>
+                              📈 Growth: {career.growth_level}
+                            </span>
+                            <span style={{ 
+                              fontSize: '0.75rem', 
+                              fontWeight: '600', 
+                              backgroundColor: 'rgba(99, 102, 241, 0.08)', 
+                              color: '#a5b4fc', 
+                              border: '1px solid rgba(99, 102, 241, 0.2)',
+                              padding: '0.3rem 0.6rem',
+                              borderRadius: '4px'
+                            }}>
+                              🔥 Future Demand: {career.future_demand}
+                            </span>
+                          </div>
+
+                          {/* Matching Reasons */}
+                          <div style={{ marginBottom: '1.5rem' }}>
+                            <h4 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--text-light)', marginBottom: '0.5rem' }}>Match Breakdown</h4>
+                            <ul style={{ listStyleType: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                              {career.reason.map((r, rIdx) => (
+                                <li key={rIdx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.9rem', color: '#e2e8f0' }}>
+                                  <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>✓</span>
+                                  <span>{r}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {/* Skill Gap Analysis */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', padding: '1.25rem', backgroundColor: 'rgba(255,255,255,0.01)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)', marginBottom: '1.5rem' }}>
+                            <div>
+                              <h4 style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-light)', marginBottom: '0.6rem', display: 'flex', justifyContent: 'space-between' }}>
+                                <span>Required Skills Gap Analysis</span>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                                  {reqSkillsEnriched.filter(s => s.matched).length} / {reqSkillsEnriched.length} Matched
+                                </span>
+                              </h4>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                {reqSkillsEnriched.map((skill, sIdx) => (
+                                  <span key={sIdx} style={{ 
+                                    fontSize: '0.8rem', 
+                                    padding: '0.3rem 0.6rem', 
+                                    borderRadius: '4px',
+                                    fontWeight: '500',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    backgroundColor: skill.matched ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.05)',
+                                    color: skill.matched ? '#34d399' : '#f87171',
+                                    border: skill.matched ? '1px solid rgba(16, 185, 129, 0.15)' : '1px solid rgba(239, 68, 68, 0.15)'
+                                  }}>
+                                    {skill.matched ? '●' : '○'} {skill.name}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+
+                            {prefSkillsEnriched.length > 0 && (
+                              <div>
+                                <h4 style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-light)', marginBottom: '0.6rem', display: 'flex', justifyContent: 'space-between' }}>
+                                  <span>Preferred Skills Gap Analysis</span>
+                                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                                    {prefSkillsEnriched.filter(s => s.matched).length} / {prefSkillsEnriched.length} Matched
+                                  </span>
+                                </h4>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                  {prefSkillsEnriched.map((skill, sIdx) => (
+                                    <span key={sIdx} style={{ 
+                                      fontSize: '0.8rem', 
+                                      padding: '0.3rem 0.6rem', 
+                                      borderRadius: '4px',
+                                      fontWeight: '500',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.25rem',
+                                      backgroundColor: skill.matched ? 'rgba(99, 102, 241, 0.08)' : 'rgba(255,255,255,0.02)',
+                                      color: skill.matched ? '#a5b4fc' : 'var(--text-muted)',
+                                      border: skill.matched ? '1px solid rgba(99, 102, 241, 0.15)' : '1px solid var(--border-color)'
+                                    }}>
+                                      {skill.matched ? '●' : '○'} {skill.name}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Related Careers */}
+                          {career.related_careers.length > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Related Paths:</span>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                {career.related_careers.map((rel, rIdx) => (
+                                  <span key={rIdx} style={{ 
+                                    fontSize: '0.75rem', 
+                                    backgroundColor: 'rgba(255,255,255,0.03)', 
+                                    border: '1px solid var(--border-color)', 
+                                    color: 'var(--text-muted)',
+                                    padding: '0.2rem 0.5rem',
+                                    borderRadius: '4px'
+                                  }}>
+                                    {rel}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
