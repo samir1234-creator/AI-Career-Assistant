@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ResumeUpload } from '../components/ResumeUpload/ResumeUpload';
 import { formatFileSize } from '../utils/formatters';
-import { extractResumeInfo, classifySkills } from '../services/api';
+import { extractResumeInfo, classifySkills, getATSScore } from '../services/api';
 
 const CATEGORY_DISPLAY_NAMES = {
   'Programming Language': 'Programming Languages',
@@ -216,9 +216,10 @@ export const AnalyzerPage = () => {
   const [parsedData, setParsedData] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
   const [enrichedSkills, setEnrichedSkills] = useState([]);
+  const [atsData, setAtsData] = useState(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionError, setExtractionError] = useState(null);
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'raw'
+  const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'ats' or 'raw'
 
   const handleUploadSuccess = async (data) => {
     setParsedData(data);
@@ -226,6 +227,7 @@ export const AnalyzerPage = () => {
     setExtractionError(null);
     setExtractedData(null);
     setEnrichedSkills([]);
+    setAtsData(null);
     
     try {
       const result = await extractResumeInfo(data.text_content);
@@ -240,6 +242,28 @@ export const AnalyzerPage = () => {
           console.error("Failed to classify skills:", classifyErr);
         }
       }
+
+      // Request ATS Score using extracted info & parsed achievements
+      const extraSections = parseAdditionalSections(data.text_content);
+      const atsPayload = {
+        name: result.name,
+        email: result.email,
+        phone: result.phone,
+        linkedin: result.linkedin,
+        skills: cleanedSkills,
+        projects: result.projects || [],
+        education: result.education || [],
+        certifications: result.certifications || [],
+        achievements: extraSections.achievements || []
+      };
+
+      try {
+        const atsResult = await getATSScore(atsPayload);
+        setAtsData(atsResult);
+      } catch (atsErr) {
+        console.error("Failed to calculate ATS score:", atsErr);
+      }
+
     } catch (err) {
       setExtractionError(err.message || 'Failed to extract structured information.');
     } finally {
@@ -251,6 +275,7 @@ export const AnalyzerPage = () => {
     setParsedData(null);
     setExtractedData(null);
     setEnrichedSkills([]);
+    setAtsData(null);
     setExtractionError(null);
     setActiveTab('profile');
   };
@@ -355,6 +380,12 @@ export const AnalyzerPage = () => {
               ✨ Structured Profile
             </button>
             <button 
+              className={`tab-button ${activeTab === 'ats' ? 'active' : ''}`}
+              onClick={() => setActiveTab('ats')}
+            >
+              🎯 ATS Feedback
+            </button>
+            <button 
               className={`tab-button ${activeTab === 'raw' ? 'active' : ''}`}
               onClick={() => setActiveTab('raw')}
             >
@@ -427,6 +458,61 @@ export const AnalyzerPage = () => {
                         </p>
                       )}
                     </div>
+
+                    {atsData && (
+                      <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)', textAlign: 'left' }}>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
+                          ATS Score
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+                          <span style={{ 
+                            fontSize: '2rem', 
+                            fontWeight: 'bold', 
+                            color: atsData.ats_score >= 70 ? 'var(--success)' : atsData.ats_score >= 50 ? '#f59e0b' : 'var(--error)' 
+                          }}>
+                            {atsData.ats_score}
+                          </span>
+                          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>/ 100</span>
+                        </div>
+                        <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: '3px', marginTop: '0.6rem', overflow: 'hidden' }}>
+                          <div style={{ 
+                            width: `${atsData.ats_score}%`, 
+                            height: '100%', 
+                            backgroundColor: atsData.ats_score >= 70 ? 'var(--success)' : atsData.ats_score >= 50 ? '#f59e0b' : 'var(--error)',
+                            borderRadius: '3px',
+                            transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+                          }} />
+                        </div>
+                        <button 
+                          onClick={() => setActiveTab('ats')}
+                          style={{
+                            marginTop: '1rem',
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            border: '1px solid rgba(79, 70, 229, 0.2)',
+                            color: '#a5b4fc',
+                            padding: '0.4rem 0.8rem',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            width: '100%',
+                            fontWeight: '600',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = 'var(--primary)';
+                            e.target.style.color = 'var(--text-light)';
+                            e.target.style.borderColor = 'var(--primary)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'rgba(79, 70, 229, 0.1)';
+                            e.target.style.color = '#a5b4fc';
+                            e.target.style.borderColor = 'rgba(79, 70, 229, 0.2)';
+                          }}
+                        >
+                          View Breakdown &amp; Feedback &rarr;
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Right Column: Structured Sections */}
@@ -575,6 +661,213 @@ export const AnalyzerPage = () => {
                       </div>
                     )}
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'ats' && (
+            <div>
+              {isExtracting && (
+                <div className="loader-container">
+                  <div className="spinner"></div>
+                  <p style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
+                    Evaluating ATS Score...
+                  </p>
+                </div>
+              )}
+
+              {!isExtracting && !atsData && (
+                <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', padding: '2rem', textAlign: 'center' }}>
+                  No ATS details available. Please upload a resume first.
+                </p>
+              )}
+
+              {!isExtracting && atsData && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {/* Top Section: Score Circular Widget and Breakdown */}
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: '1fr', 
+                    gap: '2rem',
+                    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                    padding: '2rem',
+                    borderRadius: '12px',
+                    border: '1px solid var(--border-color)'
+                  }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'center', justifyContent: 'space-around' }}>
+                      
+                      {/* Radial Progress Counter */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ 
+                          width: '150px', 
+                          height: '150px', 
+                          borderRadius: '50%', 
+                          background: `conic-gradient(${
+                            atsData.ats_score >= 70 ? 'var(--success)' : atsData.ats_score >= 50 ? '#f59e0b' : 'var(--error)'
+                          } ${atsData.ats_score * 3.6}deg, rgba(255,255,255,0.06) 0deg)`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.2)'
+                        }}>
+                          <div style={{ 
+                            width: '130px', 
+                            height: '130px', 
+                            borderRadius: '50%', 
+                            backgroundColor: 'var(--bg-card)', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            justifyContent: 'center' 
+                          }}>
+                            <span style={{ fontSize: '2.5rem', fontWeight: '800', color: 'var(--text-light)', fontFamily: "'Outfit', sans-serif" }}>
+                              {atsData.ats_score}
+                            </span>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold' }}>
+                              Score / 100
+                            </span>
+                          </div>
+                        </div>
+                        <h4 style={{ 
+                          marginTop: '0.5rem', 
+                          fontSize: '1.1rem', 
+                          fontWeight: '600', 
+                          color: atsData.ats_score >= 70 ? 'var(--success)' : atsData.ats_score >= 50 ? '#f59e0b' : 'var(--error)' 
+                        }}>
+                          {atsData.ats_score >= 70 ? 'Good Match' : atsData.ats_score >= 50 ? 'Needs Improvement' : 'Low Match'}
+                        </h4>
+                      </div>
+
+                      {/* Score Breakdown Section */}
+                      <div style={{ flex: 1, minWidth: '280px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <h4 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-light)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                          Score Breakdown
+                        </h4>
+                        
+                        {/* Skills */}
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                            <span style={{ fontWeight: '500' }}>Skills</span>
+                            <span style={{ color: 'var(--text-muted)' }}>{atsData.score_breakdown.skills} / 30</span>
+                          </div>
+                          <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ width: `${(atsData.score_breakdown.skills / 30) * 100}%`, height: '100%', backgroundColor: 'var(--primary)', borderRadius: '3px' }} />
+                          </div>
+                        </div>
+
+                        {/* Projects */}
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                            <span style={{ fontWeight: '500' }}>Projects</span>
+                            <span style={{ color: 'var(--text-muted)' }}>{atsData.score_breakdown.projects} / 25</span>
+                          </div>
+                          <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ width: `${(atsData.score_breakdown.projects / 25) * 100}%`, height: '100%', backgroundColor: 'var(--success)', borderRadius: '3px' }} />
+                          </div>
+                        </div>
+
+                        {/* Education */}
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                            <span style={{ fontWeight: '500' }}>Education</span>
+                            <span style={{ color: 'var(--text-muted)' }}>{atsData.score_breakdown.education} / 15</span>
+                          </div>
+                          <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ width: `${(atsData.score_breakdown.education / 15) * 100}%`, height: '100%', backgroundColor: '#60a5fa', borderRadius: '3px' }} />
+                          </div>
+                        </div>
+
+                        {/* Certifications */}
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                            <span style={{ fontWeight: '500' }}>Certifications</span>
+                            <span style={{ color: 'var(--text-muted)' }}>{atsData.score_breakdown.certifications} / 10</span>
+                          </div>
+                          <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ width: `${(atsData.score_breakdown.certifications / 10) * 100}%`, height: '100%', backgroundColor: '#c084fc', borderRadius: '3px' }} />
+                          </div>
+                        </div>
+
+                        {/* Achievements */}
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                            <span style={{ fontWeight: '500' }}>Achievements</span>
+                            <span style={{ color: 'var(--text-muted)' }}>{atsData.score_breakdown.achievements} / 10</span>
+                          </div>
+                          <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ width: `${(atsData.score_breakdown.achievements / 10) * 100}%`, height: '100%', backgroundColor: '#fb7185', borderRadius: '3px' }} />
+                          </div>
+                        </div>
+
+                        {/* Contact details */}
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                            <span style={{ fontWeight: '500' }}>Contact Details</span>
+                            <span style={{ color: 'var(--text-muted)' }}>{atsData.score_breakdown.contact} / 10</span>
+                          </div>
+                          <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ width: `${(atsData.score_breakdown.contact / 10) * 100}%`, height: '100%', backgroundColor: '#2dd4bf', borderRadius: '3px' }} />
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recommendations and Feedback Section */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
+                    <div className="profile-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                      
+                      {/* Strengths card */}
+                      <div className="section-card" style={{ height: 'fit-content' }}>
+                        <h4 className="section-title" style={{ color: 'var(--success)', borderBottomColor: 'rgba(16, 185, 129, 0.2)' }}>
+                          <span>✓</span> Strengths
+                        </h4>
+                        <ul style={{ listStyleType: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                          {atsData.strengths && atsData.strengths.map((str, idx) => (
+                            <li key={idx} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', color: '#e2e8f0', fontSize: '0.95rem' }}>
+                              <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>✓</span>
+                              <span>{str}</span>
+                            </li>
+                          ))}
+                          {(!atsData.strengths || atsData.strengths.length === 0) && (
+                            <li style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9rem' }}>
+                              No significant strengths detected.
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+
+                      {/* Areas to Improve card */}
+                      <div className="section-card" style={{ height: 'fit-content' }}>
+                        <h4 className="section-title" style={{ color: '#f87171', borderBottomColor: 'rgba(239, 68, 68, 0.2)' }}>
+                          <span>✗</span> Areas to Improve
+                        </h4>
+                        <ul style={{ listStyleType: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                          {atsData.weaknesses && atsData.weaknesses.map((weak, idx) => (
+                            <li key={idx} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', color: '#e2e8f0', fontSize: '0.95rem' }}>
+                              <span style={{ color: '#f87171', fontWeight: 'bold' }}>✗</span>
+                              <span>{weak}</span>
+                            </li>
+                          ))}
+                          {atsData.recommendations && atsData.recommendations.map((rec, idx) => (
+                            <li key={`rec-${idx}`} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', color: '#cbd5e1', fontSize: '0.92rem', paddingLeft: '1rem', fontStyle: 'italic' }}>
+                              <span style={{ color: 'var(--text-muted)' }}>&bull;</span>
+                              <span>{rec}</span>
+                            </li>
+                          ))}
+                          {(!atsData.weaknesses || atsData.weaknesses.length === 0) && (!atsData.recommendations || atsData.recommendations.length === 0) && (
+                            <li style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9rem' }}>
+                              No improvement areas identified. Excellent resume!
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+
+                    </div>
+                  </div>
+
                 </div>
               )}
             </div>
