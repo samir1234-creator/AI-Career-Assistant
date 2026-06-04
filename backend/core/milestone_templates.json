@@ -1,0 +1,71 @@
+{
+  "AI Engineer": [
+    {
+      "milestone_index": 1,
+      "title": "Foundations",
+      "skills": ["Python", "Machine Learning"]
+    },
+    {
+      "milestone_index": 2,
+      "title": "Core Deep Learning",
+      "skills": ["Deep Learning"]
+    },
+    {
+      "milestone_index": 3,
+      "title": "Deep Learning Frameworks",
+      "skills": ["PyTorch", "TensorFlow"]
+    },
+    {
+      "milestone_index": 4,
+      "title": "Natural Language Processing",
+      "skills": ["NLP"]
+    },
+    {
+      "milestone_index": 5,
+      "title": "Large Language Models",
+      "skills": ["LLMs"]
+    },
+    {
+      "milestone_index": 6,
+      "title": "Generative AI Concepts",
+      "skills": ["Generative AI"]
+    },
+    {
+      "milestone_index": 7,
+      "title": "Generative AI Application Tools",
+      "skills": ["LangChain", "LlamaIndex"]
+    }
+  ],
+  "Full Stack Developer": [
+    {
+      "milestone_index": 1,
+      "title": "Web Foundations",
+      "skills": ["HTML5", "CSS3", "JavaScript"]
+    },
+    {
+      "milestone_index": 2,
+      "title": "Frontend Core Frameworks",
+      "skills": ["React", "TypeScript", "Redux"]
+    },
+    {
+      "milestone_index": 3,
+      "title": "Backend Foundations",
+      "skills": ["Node.js", "Express.js", "SQL"]
+    },
+    {
+      "milestone_index": 4,
+      "title": "NoSQL Databases & Cache",
+      "skills": ["MongoDB", "Redis"]
+    },
+    {
+      "milestone_index": 5,
+      "title": "Advanced Web Frameworks",
+      "skills": ["Next.js", "Tailwind CSS", "FastAPI"]
+    },
+    {
+      "milestone_index": 6,
+      "title": "DevOps & Containers",
+      "skills": ["Git", "Docker", "REST APIs"]
+    }
+  ]
+}

@@ -1854,6 +1854,118 @@ total_skill_count = sum(len(skills) for skills in skill_categories.values())
 print(f"Total Careers defined: {len(careers)}")
 print(f"Total Skills defined: {total_skill_count}")
 
+SKILL_METADATA_DEFAULTS = {
+    "python": {"priority": "critical", "impact_score": 90, "estimated_learning_time": "4 weeks"},
+    "java": {"priority": "critical", "impact_score": 85, "estimated_learning_time": "6 weeks"},
+    "javascript": {"priority": "critical", "impact_score": 85, "estimated_learning_time": "4 weeks"},
+    "typescript": {"priority": "important", "impact_score": 80, "estimated_learning_time": "4 weeks"},
+    "go": {"priority": "important", "impact_score": 75, "estimated_learning_time": "4 weeks"},
+    "golang": {"priority": "important", "impact_score": 75, "estimated_learning_time": "4 weeks"},
+    "rust": {"priority": "important", "impact_score": 80, "estimated_learning_time": "6 weeks"},
+    "c++": {"priority": "critical", "impact_score": 90, "estimated_learning_time": "8 weeks"},
+    "c#": {"priority": "critical", "impact_score": 85, "estimated_learning_time": "6 weeks"},
+    
+    "docker": {"priority": "important", "impact_score": 75, "estimated_learning_time": "2 weeks"},
+    "kubernetes": {"priority": "important", "impact_score": 80, "estimated_learning_time": "4 weeks"},
+    "aws": {"priority": "important", "impact_score": 80, "estimated_learning_time": "4 weeks"},
+    "azure": {"priority": "important", "impact_score": 75, "estimated_learning_time": "4 weeks"},
+    "gcp": {"priority": "important", "impact_score": 75, "estimated_learning_time": "4 weeks"},
+    "cloud computing": {"priority": "important", "impact_score": 70, "estimated_learning_time": "3 weeks"},
+    "terraform": {"priority": "important", "impact_score": 75, "estimated_learning_time": "3 weeks"},
+    "ci/cd": {"priority": "important", "impact_score": 80, "estimated_learning_time": "2 weeks"},
+    "jenkins": {"priority": "important", "impact_score": 70, "estimated_learning_time": "2 weeks"},
+    "linux": {"priority": "critical", "impact_score": 80, "estimated_learning_time": "3 weeks"},
+    "git": {"priority": "critical", "impact_score": 85, "estimated_learning_time": "1 week"},
+    
+    "sql": {"priority": "critical", "impact_score": 85, "estimated_learning_time": "3 weeks"},
+    "databases": {"priority": "critical", "impact_score": 80, "estimated_learning_time": "3 weeks"},
+    "mongodb": {"priority": "important", "impact_score": 70, "estimated_learning_time": "2 weeks"},
+    "postgresql": {"priority": "important", "impact_score": 75, "estimated_learning_time": "2 weeks"},
+    "mysql": {"priority": "important", "impact_score": 70, "estimated_learning_time": "2 weeks"},
+    "redis": {"priority": "optional", "impact_score": 50, "estimated_learning_time": "2 weeks"},
+    "firebase": {"priority": "optional", "impact_score": 45, "estimated_learning_time": "2 weeks"},
+    
+    "react": {"priority": "critical", "impact_score": 90, "estimated_learning_time": "4 weeks"},
+    "next.js": {"priority": "important", "impact_score": 80, "estimated_learning_time": "3 weeks"},
+    "angular": {"priority": "important", "impact_score": 80, "estimated_learning_time": "4 weeks"},
+    "vue.js": {"priority": "important", "impact_score": 75, "estimated_learning_time": "3 weeks"},
+    "html5": {"priority": "critical", "impact_score": 80, "estimated_learning_time": "1 week"},
+    "css3": {"priority": "critical", "impact_score": 80, "estimated_learning_time": "2 weeks"},
+    "tailwind css": {"priority": "optional", "impact_score": 55, "estimated_learning_time": "1 week"},
+    "redux": {"priority": "important", "impact_score": 70, "estimated_learning_time": "2 weeks"},
+    
+    "node.js": {"priority": "critical", "impact_score": 90, "estimated_learning_time": "4 weeks"},
+    "express.js": {"priority": "critical", "impact_score": 80, "estimated_learning_time": "2 weeks"},
+    "fastapi": {"priority": "important", "impact_score": 75, "estimated_learning_time": "2 weeks"},
+    "django": {"priority": "critical", "impact_score": 85, "estimated_learning_time": "4 weeks"},
+    "flask": {"priority": "important", "impact_score": 70, "estimated_learning_time": "2 weeks"},
+    "spring boot": {"priority": "critical", "impact_score": 90, "estimated_learning_time": "6 weeks"},
+    "nestjs": {"priority": "important", "impact_score": 75, "estimated_learning_time": "3 weeks"},
+    "rest apis": {"priority": "important", "impact_score": 80, "estimated_learning_time": "1 week"},
+    
+    "machine learning": {"priority": "critical", "impact_score": 95, "estimated_learning_time": "6 weeks"},
+    "deep learning": {"priority": "critical", "impact_score": 95, "estimated_learning_time": "6 weeks"},
+    "llms": {"priority": "critical", "impact_score": 90, "estimated_learning_time": "4-6 weeks"},
+    "nlp": {"priority": "important", "impact_score": 75, "estimated_learning_time": "2-4 weeks"},
+    "generative ai": {"priority": "important", "impact_score": 80, "estimated_learning_time": "2-4 weeks"},
+    "langchain": {"priority": "optional", "impact_score": 40, "estimated_learning_time": "1-2 weeks"},
+    "llamaindex": {"priority": "optional", "impact_score": 35, "estimated_learning_time": "2 weeks"},
+    "pytorch": {"priority": "important", "impact_score": 85, "estimated_learning_time": "3 weeks"},
+    "tensorflow": {"priority": "important", "impact_score": 80, "estimated_learning_time": "4 weeks"},
+    "scikit-learn": {"priority": "important", "impact_score": 85, "estimated_learning_time": "2 weeks"},
+    "data analysis": {"priority": "critical", "impact_score": 85, "estimated_learning_time": "3 weeks"},
+    "statistics": {"priority": "critical", "impact_score": 80, "estimated_learning_time": "4 weeks"},
+    "tableau": {"priority": "important", "impact_score": 70, "estimated_learning_time": "2 weeks"},
+    "power bi": {"priority": "important", "impact_score": 70, "estimated_learning_time": "2 weeks"},
+    "excel": {"priority": "important", "impact_score": 60, "estimated_learning_time": "1 week"},
+    "mlops": {"priority": "important", "impact_score": 80, "estimated_learning_time": "4 weeks"},
+    "vector databases": {"priority": "important", "impact_score": 75, "estimated_learning_time": "2 weeks"},
+    "rag": {"priority": "important", "impact_score": 80, "estimated_learning_time": "2 weeks"},
+    "prompt engineering": {"priority": "optional", "impact_score": 50, "estimated_learning_time": "1 week"},
+    "fine-tuning": {"priority": "important", "impact_score": 75, "estimated_learning_time": "3 weeks"},
+    
+    "figma": {"priority": "critical", "impact_score": 85, "estimated_learning_time": "2 weeks"},
+    "project management": {"priority": "critical", "impact_score": 85, "estimated_learning_time": "4 weeks"},
+    "agile": {"priority": "important", "impact_score": 70, "estimated_learning_time": "1 week"},
+    "scrum": {"priority": "important", "impact_score": 70, "estimated_learning_time": "1 week"},
+    "jira": {"priority": "important", "impact_score": 60, "estimated_learning_time": "1 week"}
+}
+
+# Attach skill gap intelligence metadata to careers
+for career in careers:
+    skills_metadata = []
+    seen = set()
+    
+    # Process required skills
+    for s in career.get("required_skills", []):
+        s_lower = s.lower().strip()
+        if s_lower in seen:
+            continue
+        seen.add(s_lower)
+        details = SKILL_METADATA_DEFAULTS.get(s_lower, {"priority": "critical", "impact_score": 85, "estimated_learning_time": "4 weeks"})
+        skills_metadata.append({
+            "skill": s,
+            "priority": details["priority"],
+            "impact_score": details["impact_score"],
+            "estimated_learning_time": details["estimated_learning_time"]
+        })
+        
+    # Process preferred skills
+    for s in career.get("preferred_skills", []):
+        s_lower = s.lower().strip()
+        if s_lower in seen:
+            continue
+        seen.add(s_lower)
+        details = SKILL_METADATA_DEFAULTS.get(s_lower, {"priority": "optional", "impact_score": 45, "estimated_learning_time": "2 weeks"})
+        skills_metadata.append({
+            "skill": s,
+            "priority": details["priority"],
+            "impact_score": details["impact_score"],
+            "estimated_learning_time": details["estimated_learning_time"]
+        })
+        
+    career["skills_metadata"] = skills_metadata
+
 # Save career database
 with open(career_db_path, "w", encoding="utf-8") as f:
     json.dump(careers, f, indent=2)

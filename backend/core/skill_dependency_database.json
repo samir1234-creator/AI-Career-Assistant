@@ -1,0 +1,89 @@
+{
+  "deep learning": [
+    "Python",
+    "Machine Learning"
+  ],
+  "llms": [
+    "Deep Learning",
+    "NLP"
+  ],
+  "langchain": [
+    "LLMs"
+  ],
+  "llamaindex": [
+    "LLMs"
+  ],
+  "nlp": [
+    "Python",
+    "Machine Learning"
+  ],
+  "generative ai": [
+    "LLMs"
+  ],
+  "pytorch": [
+    "Python",
+    "Deep Learning"
+  ],
+  "tensorflow": [
+    "Python",
+    "Deep Learning"
+  ],
+  "scikit-learn": [
+    "Python",
+    "Machine Learning"
+  ],
+  "fastapi": [
+    "Python"
+  ],
+  "django": [
+    "Python"
+  ],
+  "flask": [
+    "Python"
+  ],
+  "next.js": [
+    "React",
+    "JavaScript"
+  ],
+  "react": [
+    "JavaScript",
+    "HTML5",
+    "CSS3"
+  ],
+  "typescript": [
+    "JavaScript"
+  ],
+  "nestjs": [
+    "TypeScript",
+    "Node.js"
+  ],
+  "express.js": [
+    "Node.js",
+    "JavaScript"
+  ],
+  "docker": [
+    "Linux"
+  ],
+  "kubernetes": [
+    "Docker"
+  ],
+  "mlops": [
+    "Docker",
+    "Machine Learning"
+  ],
+  "ci/cd": [
+    "Git"
+  ],
+  "github actions": [
+    "Git"
+  ],
+  "aws": [
+    "Cloud Computing"
+  ],
+  "azure": [
+    "Cloud Computing"
+  ],
+  "gcp": [
+    "Cloud Computing"
+  ]
+}

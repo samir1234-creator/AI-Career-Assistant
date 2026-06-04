@@ -104,3 +104,20 @@ export const getRecommendations = async (resumeData) => {
   }
 };
 
+export const getSkillGapAnalysis = async (gapPayload) => {
+  try {
+    const response = await axios.post(`${CONFIG.API_URL}/skill-gap/analyze`, gapPayload);
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Skill gap analysis failed');
+    }
+    
+    return response.data.data;
+  } catch (error) {
+    if (error.response && error.response.data && error.response.data.message) {
+      throw new Error(error.response.data.message, { cause: error });
+    }
+    throw new Error(ERROR_MESSAGES.NETWORK_ERROR, { cause: error });
+  }
+};
+

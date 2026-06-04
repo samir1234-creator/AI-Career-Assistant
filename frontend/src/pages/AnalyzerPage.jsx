@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ResumeUpload } from '../components/ResumeUpload/ResumeUpload';
 import { formatFileSize } from '../utils/formatters';
-import { extractResumeInfo, classifySkills, getATSScore, getRecommendations } from '../services/api';
+import { extractResumeInfo, classifySkills, getATSScore, getRecommendations, getSkillGapAnalysis } from '../services/api';
 
 const CATEGORY_DISPLAY_NAMES = {
   'Programming Language': 'Programming Languages',
@@ -231,6 +231,74 @@ export const AnalyzerPage = () => {
   const [extractionError, setExtractionError] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
 
+  const [expandedGaps, setExpandedGaps] = useState({});
+  const [skillGaps, setSkillGaps] = useState({});
+  const [loadingGaps, setLoadingGaps] = useState({});
+  const [showJson, setShowJson] = useState({});
+  const [gapErrors, setGapErrors] = useState({});
+
+  const handleToggleGap = async (roleName, career) => {
+    const isExpanded = !expandedGaps[roleName];
+    setExpandedGaps(prev => ({
+      ...prev,
+      [roleName]: isExpanded
+    }));
+
+    if (isExpanded && !skillGaps[roleName]) {
+      setLoadingGaps(prev => ({
+        ...prev,
+        [roleName]: true
+      }));
+      setGapErrors(prev => ({
+        ...prev,
+        [roleName]: null
+      }));
+
+      try {
+        // Calculate matched/missing required and preferred skills
+        const reqSkillsEnriched = (career?.required_skills || []).map(s => ({
+          name: s,
+          matched: isSkillMatched(s, processedData?.skills || [])
+        }));
+        const prefSkillsEnriched = (career?.preferred_skills || []).map(s => ({
+          name: s,
+          matched: isSkillMatched(s, processedData?.skills || [])
+        }));
+
+        const matched_skills = [
+          ...reqSkillsEnriched.filter(s => s.matched).map(s => s.name),
+          ...prefSkillsEnriched.filter(s => s.matched).map(s => s.name)
+        ];
+        const missing_skills = [
+          ...reqSkillsEnriched.filter(s => !s.matched).map(s => s.name),
+          ...prefSkillsEnriched.filter(s => !s.matched).map(s => s.name)
+        ];
+
+        const gapData = await getSkillGapAnalysis({
+          career: roleName,
+          matched_skills,
+          missing_skills
+        });
+
+        setSkillGaps(prev => ({
+          ...prev,
+          [roleName]: gapData
+        }));
+      } catch (err) {
+        console.error(`Failed to analyze skill gap for ${roleName}:`, err);
+        setGapErrors(prev => ({
+          ...prev,
+          [roleName]: err.message || err.toString()
+        }));
+      } finally {
+        setLoadingGaps(prev => ({
+          ...prev,
+          [roleName]: false
+        }));
+      }
+    }
+  };
+
   const handleUploadSuccess = async (data) => {
     setParsedData(data);
     setIsExtracting(true);
@@ -305,6 +373,11 @@ export const AnalyzerPage = () => {
     setEnrichedSkills([]);
     setAtsData(null);
     setRecommendationsData(null);
+    setExpandedGaps({});
+    setSkillGaps({});
+    setLoadingGaps({});
+    setShowJson({});
+    setGapErrors({});
     setExtractionError(null);
     setActiveTab('profile');
   };
@@ -1158,7 +1231,729 @@ export const AnalyzerPage = () => {
                             )}
                           </div>
 
+                          {/* Collapsible Advanced Skill Gap Intelligence */}
+                          <div style={{ marginBottom: '1.5rem' }}>
+                            <button
+                              onClick={() => handleToggleGap(career.role, career)}
+                              style={{
+                                backgroundColor: expandedGaps[career.role] ? 'rgba(79, 70, 229, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+                                border: expandedGaps[career.role] ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                                color: 'var(--text-light)',
+                                padding: '0.65rem 1.25rem',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                width: '100%',
+                                fontWeight: '600',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                transition: 'all 0.2s ease',
+                                fontSize: '0.9rem',
+                                outline: 'none'
+                              }}
+                            >
+                              <span>📊</span> {expandedGaps[career.role] ? 'Collapse Skill Gap Intelligence' : 'Analyze Skill Gap Intelligence'}
+                            </button>
+
+                            {expandedGaps[career.role] && (
+                              <div style={{
+                                marginTop: '1rem',
+                                padding: '1.25rem',
+                                backgroundColor: 'rgba(255, 255, 255, 0.015)',
+                                borderRadius: '10px',
+                                border: '1px solid rgba(255, 255, 255, 0.04)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '1.25rem'
+                              }}>
+                                {loadingGaps[career.role] ? (
+                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1.5rem 0' }}>
+                                    <div className="spinner" style={{ width: '32px', height: '32px', border: '3px solid var(--border-color)', borderTopColor: 'var(--primary)', borderRadius: '50%', marginBottom: '0.75rem' }}></div>
+                                    <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Generating skill gap report...</span>
+                                  </div>
+                                ) : skillGaps[career.role] ? (
+                                  <>
+                                    {(() => {
+                                      const renderEffortBadge = (effort) => {
+                                        let color = '#34d399';
+                                        let bg = 'rgba(16, 185, 129, 0.08)';
+                                        let border = '1px solid rgba(16, 185, 129, 0.15)';
+                                        if (effort === 'Very High') {
+                                          color = '#f87171';
+                                          bg = 'rgba(239, 68, 68, 0.08)';
+                                          border = '1px solid rgba(239, 68, 68, 0.15)';
+                                        } else if (effort === 'High') {
+                                          color = '#fbbf24';
+                                          bg = 'rgba(245, 158, 11, 0.08)';
+                                          border = '1px solid rgba(245, 158, 11, 0.15)';
+                                        } else if (effort === 'Medium') {
+                                          color = '#60a5fa';
+                                          bg = 'rgba(59, 130, 246, 0.08)';
+                                          border = '1px solid rgba(59, 130, 246, 0.15)';
+                                        }
+                                        return (
+                                          <span style={{
+                                            fontSize: '0.7rem',
+                                            fontWeight: '600',
+                                            color: color,
+                                            backgroundColor: bg,
+                                            border: border,
+                                            padding: '0.15rem 0.4rem',
+                                            borderRadius: '4px',
+                                            textTransform: 'uppercase',
+                                            display: 'inline-block'
+                                          }}>
+                                            {effort}
+                                          </span>
+                                        );
+                                      };
+
+                                      const readiness = skillGaps[career.role].career_readiness;
+                                      let readinessColor = 'var(--success)';
+                                      if (readiness < 26) readinessColor = 'var(--error)';
+                                      else if (readiness < 51) readinessColor = '#f97316';
+                                      else if (readiness < 76) readinessColor = '#fbbf24';
+                                      else if (readiness < 91) readinessColor = '#818cf8';
+
+                                      const totalSkillsToLearn = skillGaps[career.role].critical_skills.length +
+                                                                 skillGaps[career.role].important_skills.length +
+                                                                 skillGaps[career.role].optional_skills.length;
+
+                                      return (
+                                        <>
+                                          {/* Metrics Grid */}
+                                          <div style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                            gap: '1rem'
+                                          }}>
+                                            {/* Readiness Card */}
+                                            <div style={{
+                                              backgroundColor: 'var(--bg-card)',
+                                              border: '1px solid var(--border-color)',
+                                              borderRadius: '8px',
+                                              padding: '1rem',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: '0.85rem'
+                                            }}>
+                                              <div style={{
+                                                width: '52px',
+                                                height: '52px',
+                                                borderRadius: '50%',
+                                                background: `conic-gradient(${readinessColor} ${readiness * 3.6}deg, rgba(255,255,255,0.06) 0deg)`,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                flexShrink: 0
+                                              }}>
+                                                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                                                  {readiness}%
+                                                </div>
+                                              </div>
+                                              <div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold' }}>Career Readiness</div>
+                                                <div style={{ 
+                                                  fontSize: '1rem', 
+                                                  fontWeight: 'bold', 
+                                                  color: readinessColor
+                                                }}>
+                                                  {skillGaps[career.role].career_readiness_level}
+                                                </div>
+                                              </div>
+                                            </div>
+
+                                            {/* Gap Severity Card */}
+                                            <div style={{
+                                              backgroundColor: 'var(--bg-card)',
+                                              border: '1px solid var(--border-color)',
+                                              borderRadius: '8px',
+                                              padding: '1rem',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: '0.85rem'
+                                            }}>
+                                              <div style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '6px',
+                                                backgroundColor: skillGaps[career.role].gap_severity === 'Low Gap' ? 'rgba(16, 185, 129, 0.1)' :
+                                                                 skillGaps[career.role].gap_severity === 'Medium Gap' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '1.25rem',
+                                                color: skillGaps[career.role].gap_severity === 'Low Gap' ? 'var(--success)' :
+                                                       skillGaps[career.role].gap_severity === 'Medium Gap' ? '#fbbf24' : 'var(--error)',
+                                                flexShrink: 0
+                                              }}>
+                                                {skillGaps[career.role].gap_severity === 'Low Gap' ? '🟢' :
+                                                 skillGaps[career.role].gap_severity === 'Medium Gap' ? '🟡' : '🔴'}
+                                              </div>
+                                              <div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold' }}>Gap Severity</div>
+                                                <div style={{
+                                                  fontSize: '1rem',
+                                                  fontWeight: 'bold',
+                                                  color: skillGaps[career.role].gap_severity === 'Low Gap' ? 'var(--success)' :
+                                                         skillGaps[career.role].gap_severity === 'Medium Gap' ? '#fbbf24' : '#f87171'
+                                                }}>
+                                                  {skillGaps[career.role].gap_severity}
+                                                </div>
+                                              </div>
+                                            </div>
+
+                                            {/* Estimated Time to Job Ready */}
+                                            <div style={{
+                                              backgroundColor: 'var(--bg-card)',
+                                              border: '1px solid var(--border-color)',
+                                              borderRadius: '8px',
+                                              padding: '1rem',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: '0.85rem'
+                                            }}>
+                                              <div style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '6px',
+                                                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '1.25rem',
+                                                color: '#818cf8',
+                                                flexShrink: 0
+                                              }}>
+                                                ⏱️
+                                              </div>
+                                              <div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold' }}>Time to Job Ready</div>
+                                                <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#a5b4fc' }}>
+                                                  {skillGaps[career.role].job_ready_time_months}
+                                                </div>
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                                  or {skillGaps[career.role].job_ready_time_weeks}
+                                                </div>
+                                              </div>
+                                            </div>
+
+                                            {/* Total Gaps Card */}
+                                            <div style={{
+                                              backgroundColor: 'var(--bg-card)',
+                                              border: '1px solid var(--border-color)',
+                                              borderRadius: '8px',
+                                              padding: '1rem',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: '0.85rem'
+                                            }}>
+                                              <div style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '6px',
+                                                backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '1.25rem',
+                                                color: '#cbd5e1',
+                                                flexShrink: 0
+                                              }}>
+                                                📚
+                                              </div>
+                                              <div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold' }}>Missing Skills</div>
+                                                <div style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-light)' }}>
+                                                  {totalSkillsToLearn} Skills
+                                                </div>
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                                  to learn in total
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                          {/* Career Readiness Insights Summary Text */}
+                                          <div style={{
+                                            backgroundColor: 'rgba(99, 102, 241, 0.04)',
+                                            borderLeft: '4px solid #6366f1',
+                                            padding: '1.25rem',
+                                            borderRadius: '8px',
+                                            lineHeight: '1.6',
+                                            whiteSpace: 'pre-line',
+                                            fontSize: '0.925rem',
+                                            color: '#e2e8f0'
+                                          }}>
+                                            <h4 style={{ fontWeight: '700', color: 'var(--text-light)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: "'Outfit', sans-serif" }}>
+                                              <span>💡</span> Career Readiness Insights
+                                            </h4>
+                                            {skillGaps[career.role].insights.summary_text}
+                                          </div>
+
+                                          {/* Strong & Weak Areas list */}
+                                          <div style={{
+                                            backgroundColor: 'rgba(255,255,255,0.01)',
+                                            border: '1px solid var(--border-color)',
+                                            borderRadius: '8px',
+                                            padding: '1.25rem',
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                                            gap: '1.5rem'
+                                          }}>
+                                            <div>
+                                              <div style={{ fontSize: '0.85rem', color: 'var(--success)', fontWeight: 'bold', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>✓ Strong Areas</div>
+                                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                                {skillGaps[career.role].insights.strong_areas.slice(0, 8).map((sa, saIdx) => (
+                                                  <div key={saIdx} style={{ fontSize: '0.85rem', color: '#cbd5e1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    ✓ {sa}
+                                                  </div>
+                                                ))}
+                                                {skillGaps[career.role].insights.strong_areas.length > 8 && (
+                                                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', paddingLeft: '0.75rem' }}>+{skillGaps[career.role].insights.strong_areas.length - 8} more</div>
+                                                )}
+                                                {skillGaps[career.role].insights.strong_areas.length === 0 && (
+                                                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>None detected</span>
+                                                )}
+                                              </div>
+                                            </div>
+                                            <div>
+                                              <div style={{ fontSize: '0.85rem', color: '#fca5a5', fontWeight: 'bold', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>✗ Weak Areas</div>
+                                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                                {skillGaps[career.role].insights.weak_areas.slice(0, 8).map((wa, waIdx) => (
+                                                  <div key={waIdx} style={{ fontSize: '0.85rem', color: '#cbd5e1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    ✗ {wa}
+                                                  </div>
+                                                ))}
+                                                {skillGaps[career.role].insights.weak_areas.length > 8 && (
+                                                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', paddingLeft: '0.75rem' }}>+{skillGaps[career.role].insights.weak_areas.length - 8} more</div>
+                                                )}
+                                                {skillGaps[career.role].insights.weak_areas.length === 0 && (
+                                                  <span style={{ fontSize: '0.8rem', color: 'var(--success)', fontStyle: 'italic' }}>No major weaknesses</span>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                          {/* Milestone Career Roadmap */}
+                                          {skillGaps[career.role].milestones && skillGaps[career.role].milestones.length > 0 && (
+                                            <div style={{
+                                              backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                                              border: '1px solid var(--border-color)',
+                                              borderRadius: '10px',
+                                              padding: '1.5rem',
+                                            }}>
+                                              <h4 style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-light)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: "'Outfit', sans-serif" }}>
+                                                <span>🗺️</span> Milestone Career Roadmap
+                                              </h4>
+                                              <div style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '1.5rem',
+                                                position: 'relative',
+                                                paddingLeft: '1.25rem',
+                                                borderLeft: '2px dashed rgba(99, 102, 241, 0.25)'
+                                              }}>
+                                                {skillGaps[career.role].milestones.map((milestone, mIdx) => {
+                                                  const isLast = mIdx === skillGaps[career.role].milestones.length - 1;
+                                                  return (
+                                                    <div key={mIdx} style={{
+                                                      position: 'relative',
+                                                      display: 'flex',
+                                                      flexDirection: 'column',
+                                                      gap: '0.5rem'
+                                                    }}>
+                                                      {/* Milestone Step Indicator Badge */}
+                                                      <div style={{
+                                                        position: 'absolute',
+                                                        left: '-2.05rem',
+                                                        top: '0.15rem',
+                                                        width: '24px',
+                                                        height: '24px',
+                                                        borderRadius: '50%',
+                                                        backgroundColor: isLast ? 'rgba(16, 185, 129, 0.1)' : 'rgba(99, 102, 241, 0.1)',
+                                                        border: isLast ? '2px solid var(--success)' : '2px solid var(--primary)',
+                                                        color: isLast ? 'var(--success)' : 'var(--text-light)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: 'bold',
+                                                        zIndex: 2,
+                                                        boxShadow: '0 0 8px rgba(99, 102, 241, 0.2)'
+                                                      }}>
+                                                        {isLast ? '✓' : milestone.index}
+                                                      </div>
+                                                      
+                                                      {/* Milestone Content Box */}
+                                                      <div style={{
+                                                        backgroundColor: isLast ? 'rgba(16, 185, 129, 0.03)' : 'rgba(255, 255, 255, 0.01)',
+                                                        border: isLast ? '1px solid rgba(16, 185, 129, 0.15)' : '1px solid var(--border-color)',
+                                                        borderRadius: '8px',
+                                                        padding: '1rem 1.25rem',
+                                                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                                        cursor: 'default'
+                                                      }}
+                                                      onMouseEnter={(e) => {
+                                                        e.currentTarget.style.transform = 'translateX(4px)';
+                                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                                                      }}
+                                                      onMouseLeave={(e) => {
+                                                        e.currentTarget.style.transform = 'none';
+                                                        e.currentTarget.style.boxShadow = 'none';
+                                                      }}
+                                                      >
+                                                        <div style={{
+                                                          fontWeight: '700',
+                                                          fontSize: '0.95rem',
+                                                          color: isLast ? 'var(--success)' : 'var(--text-light)',
+                                                          fontFamily: "'Outfit', sans-serif",
+                                                          marginBottom: '0.4rem'
+                                                        }}>
+                                                          {milestone.title}
+                                                        </div>
+                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem' }}>
+                                                          {milestone.skills.map((skill, sIdx) => (
+                                                            <span key={sIdx} style={{
+                                                              fontSize: '0.75rem',
+                                                              backgroundColor: isLast ? 'rgba(16, 185, 129, 0.08)' : 'rgba(99, 102, 241, 0.05)',
+                                                              border: isLast ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(99, 102, 241, 0.2)',
+                                                              color: isLast ? '#34d399' : '#cbd5e1',
+                                                              padding: '0.25rem 0.6rem',
+                                                              borderRadius: '4px',
+                                                              fontWeight: '600'
+                                                            }}>
+                                                              {skill}
+                                                            </span>
+                                                          ))}
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  );
+                                                })}
+                                              </div>
+                                            </div>
+                                          )}
+
+                                          {/* Recommended Learning Order */}
+                                          {skillGaps[career.role].priority_ranking && skillGaps[career.role].priority_ranking.length > 0 && (
+                                            <div style={{
+                                              backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                                              border: '1px solid var(--border-color)',
+                                              borderRadius: '10px',
+                                              padding: '1.25rem',
+                                            }}>
+                                              <h4 style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-light)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: "'Outfit', sans-serif" }}>
+                                                <span>📈</span> Recommended Learning Order
+                                              </h4>
+                                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', paddingLeft: '0.5rem' }}>
+                                                {skillGaps[career.role].priority_ranking.map((skillName, rIdx) => {
+                                                  const allMissing = [
+                                                    ...skillGaps[career.role].critical_skills,
+                                                    ...skillGaps[career.role].important_skills,
+                                                    ...skillGaps[career.role].optional_skills
+                                                  ];
+                                                  const skillItem = allMissing.find(item => item.skill.toLowerCase() === skillName.toLowerCase());
+                                                  const priority = skillItem ? skillItem.priority : 'Optional';
+                                                  const effort = skillItem ? skillItem.effort_score : 'Medium';
+                                                  
+                                                  const roadmapItem = skillGaps[career.role].roadmap_compatibility.find(item => item.skill.toLowerCase() === skillName.toLowerCase());
+                                                  const dependencies = roadmapItem ? roadmapItem.dependencies : [];
+                                                  
+                                                  let priorityColor = '#c7d2fe';
+                                                  let priorityBg = 'rgba(99, 102, 241, 0.08)';
+                                                  let priorityBorder = '1px solid rgba(99, 102, 241, 0.15)';
+                                                  if (priority === 'Critical') {
+                                                    priorityColor = '#fca5a5';
+                                                    priorityBg = 'rgba(239, 68, 68, 0.08)';
+                                                    priorityBorder = '1px solid rgba(239, 68, 68, 0.15)';
+                                                  } else if (priority === 'Important') {
+                                                    priorityColor = '#fbcfe8';
+                                                    priorityBg = 'rgba(244, 63, 94, 0.06)';
+                                                    priorityBorder = '1px solid rgba(244, 63, 94, 0.12)';
+                                                  }
+
+                                                  return (
+                                                    <div key={rIdx} style={{
+                                                      display: 'flex',
+                                                      gap: '1rem',
+                                                      alignItems: 'flex-start',
+                                                      position: 'relative'
+                                                    }}>
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        alignItems: 'center',
+                                                        flexShrink: 0
+                                                      }}>
+                                                        <div style={{
+                                                          width: '26px',
+                                                          height: '26px',
+                                                          borderRadius: '50%',
+                                                          backgroundColor: 'rgba(79, 70, 229, 0.08)',
+                                                          border: '2px solid var(--primary)',
+                                                          color: 'var(--text-light)',
+                                                          display: 'flex',
+                                                          alignItems: 'center',
+                                                          justifyContent: 'center',
+                                                          fontWeight: 'bold',
+                                                          fontSize: '0.8rem',
+                                                          zIndex: 1
+                                                        }}>
+                                                          {rIdx + 1}
+                                                        </div>
+                                                        {rIdx < skillGaps[career.role].priority_ranking.length - 1 && (
+                                                          <div style={{
+                                                            width: '2px',
+                                                            height: '38px',
+                                                            backgroundColor: 'var(--border-color)',
+                                                            marginTop: '0.2rem',
+                                                            marginBottom: '0.2rem'
+                                                          }} />
+                                                        )}
+                                                      </div>
+                                                      <div style={{ flex: 1, paddingTop: '0.1rem' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                          <span style={{ fontWeight: '600', color: 'var(--text-light)', fontSize: '0.9rem' }}>{skillName}</span>
+                                                          <span style={{
+                                                            fontSize: '0.65rem',
+                                                            fontWeight: '700',
+                                                            color: priorityColor,
+                                                            backgroundColor: priorityBg,
+                                                            border: priorityBorder,
+                                                            padding: '0.1rem 0.35rem',
+                                                            borderRadius: '3px',
+                                                            textTransform: 'uppercase'
+                                                          }}>{priority}</span>
+                                                          {renderEffortBadge(effort)}
+                                                          {skillItem && (
+                                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                                              ⏱️ {skillItem.estimated_learning_time}
+                                                            </span>
+                                                          )}
+                                                        </div>
+                                                        {dependencies && dependencies.length > 0 && (
+                                                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                            <span style={{ color: '#818cf8', fontWeight: '500' }}>Prerequisites:</span> {dependencies.join(', ')}
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                    </div>
+                                                  );
+                                                })}
+                                              </div>
+                                            </div>
+                                          )}
+
+                                          {/* Grouped Missing Skills tag cloud */}
+                                          {skillGaps[career.role].missing_categories && Object.keys(skillGaps[career.role].missing_categories).length > 0 && (
+                                            <div style={{
+                                              backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                                              border: '1px solid var(--border-color)',
+                                              borderRadius: '10px',
+                                              padding: '1.25rem',
+                                            }}>
+                                              <h4 style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-light)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: "'Outfit', sans-serif" }}>
+                                                <span>📁</span> Missing Skills by Category
+                                              </h4>
+                                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+                                                {Object.entries(skillGaps[career.role].missing_categories).map(([catName, skillsList]) => (
+                                                  <div key={catName} style={{
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.015)',
+                                                    border: '1px solid rgba(255, 255, 255, 0.03)',
+                                                    borderRadius: '8px',
+                                                    padding: '1rem',
+                                                  }}>
+                                                    <h5 style={{ fontSize: '0.8rem', fontWeight: '800', color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                                                      {catName}
+                                                    </h5>
+                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                                      {skillsList.map((skill, sIdx) => (
+                                                        <span key={sIdx} style={{
+                                                          fontSize: '0.75rem',
+                                                          backgroundColor: 'rgba(79, 70, 229, 0.06)',
+                                                          border: '1px solid rgba(79, 70, 229, 0.2)',
+                                                          color: '#cbd5e1',
+                                                          padding: '0.25rem 0.55rem',
+                                                          borderRadius: '4px',
+                                                          fontWeight: '500'
+                                                        }}>
+                                                          {skill}
+                                                        </span>
+                                                      ))}
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          )}
+
+                                          {/* Detailed Lists with Effort Score Badges */}
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                            {/* Critical Skills */}
+                                            {skillGaps[career.role].critical_skills.length > 0 && (
+                                              <div>
+                                                <div style={{ fontSize: '0.8rem', color: '#fca5a5', fontWeight: 'bold', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                  🚨 Critical Missing Skills
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                                  {skillGaps[career.role].critical_skills.map((item, itemIdx) => (
+                                                    <div key={itemIdx} style={{
+                                                      backgroundColor: 'rgba(239, 68, 68, 0.02)',
+                                                      border: '1px solid rgba(239, 68, 68, 0.1)',
+                                                      borderRadius: '6px',
+                                                      padding: '0.5rem 0.75rem',
+                                                      display: 'flex',
+                                                      justifyContent: 'space-between',
+                                                      alignItems: 'center',
+                                                      gap: '0.5rem',
+                                                      flexWrap: 'wrap'
+                                                    }}>
+                                                      <span style={{ fontWeight: '600', color: 'var(--text-light)', fontSize: '0.85rem' }}>{item.skill}</span>
+                                                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                        <span style={{ fontSize: '0.75rem', color: '#fca5a5', fontWeight: 'bold' }}>Impact: {item.impact_score}</span>
+                                                        {renderEffortBadge(item.effort_score)}
+                                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.15rem 0.4rem', borderRadius: '3px' }}>
+                                                          ⏱️ {item.estimated_learning_time}
+                                                        </span>
+                                                      </div>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              </div>
+                                            )}
+
+                                            {/* Important Skills */}
+                                            {skillGaps[career.role].important_skills.length > 0 && (
+                                              <div>
+                                                <div style={{ fontSize: '0.8rem', color: '#fbcfe8', fontWeight: 'bold', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                  ⚡ Important Missing Skills
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                                  {skillGaps[career.role].important_skills.map((item, itemIdx) => (
+                                                    <div key={itemIdx} style={{
+                                                      backgroundColor: 'rgba(244, 63, 94, 0.01)',
+                                                      border: '1px solid rgba(244, 63, 94, 0.08)',
+                                                      borderRadius: '6px',
+                                                      padding: '0.5rem 0.75rem',
+                                                      display: 'flex',
+                                                      justifyContent: 'space-between',
+                                                      alignItems: 'center',
+                                                      gap: '0.5rem',
+                                                      flexWrap: 'wrap'
+                                                    }}>
+                                                      <span style={{ fontWeight: '600', color: 'var(--text-light)', fontSize: '0.85rem' }}>{item.skill}</span>
+                                                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                        <span style={{ fontSize: '0.75rem', color: '#fbcfe8', fontWeight: 'bold' }}>Impact: {item.impact_score}</span>
+                                                        {renderEffortBadge(item.effort_score)}
+                                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.15rem 0.4rem', borderRadius: '3px' }}>
+                                                          ⏱️ {item.estimated_learning_time}
+                                                        </span>
+                                                      </div>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              </div>
+                                            )}
+
+                                            {/* Optional Skills */}
+                                            {skillGaps[career.role].optional_skills.length > 0 && (
+                                              <div>
+                                                <div style={{ fontSize: '0.8rem', color: '#c7d2fe', fontWeight: 'bold', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                  💡 Optional Missing Skills
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                                  {skillGaps[career.role].optional_skills.map((item, itemIdx) => (
+                                                    <div key={itemIdx} style={{
+                                                      backgroundColor: 'rgba(99, 102, 241, 0.01)',
+                                                      border: '1px solid rgba(99, 102, 241, 0.08)',
+                                                      borderRadius: '6px',
+                                                      padding: '0.5rem 0.75rem',
+                                                      display: 'flex',
+                                                      justifyContent: 'space-between',
+                                                      alignItems: 'center',
+                                                      gap: '0.5rem',
+                                                      flexWrap: 'wrap'
+                                                    }}>
+                                                      <span style={{ fontWeight: '600', color: 'var(--text-light)', fontSize: '0.85rem' }}>{item.skill}</span>
+                                                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                        <span style={{ fontSize: '0.75rem', color: '#c7d2fe', fontWeight: 'bold' }}>Impact: {item.impact_score}</span>
+                                                        {renderEffortBadge(item.effort_score)}
+                                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.15rem 0.4rem', borderRadius: '3px' }}>
+                                                          ⏱️ {item.estimated_learning_time}
+                                                        </span>
+                                                      </div>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+
+                                          {/* Roadmap Compatibility Layer Viewer */}
+                                          <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
+                                            <button
+                                              onClick={() => setShowJson(prev => ({ ...prev, [career.role]: !prev[career.role] }))}
+                                              style={{
+                                                backgroundColor: 'transparent',
+                                                border: '1px solid var(--border-color)',
+                                                color: 'var(--text-muted)',
+                                                fontSize: '0.8rem',
+                                                cursor: 'pointer',
+                                                padding: '0.4rem 0.8rem',
+                                                borderRadius: '6px',
+                                                transition: 'all 0.2s ease',
+                                                fontWeight: '600'
+                                              }}
+                                              onMouseEnter={(e) => { e.target.style.color = 'var(--text-light)'; e.target.style.borderColor = 'var(--text-light)'; }}
+                                              onMouseLeave={(e) => { e.target.style.color = 'var(--text-muted)'; e.target.style.borderColor = 'var(--border-color)'; }}
+                                            >
+                                              {showJson[career.role] ? 'Hide Roadmap Compatibility Data' : 'View Phase 7 Compatibility Layer (JSON)'}
+                                            </button>
+                                            {showJson[career.role] && (
+                                              <div style={{ marginTop: '0.75rem' }}>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>
+                                                  The following JSON structure is designed for direct consumption by Phase 7 Roadmap Generation:
+                                                </span>
+                                                <pre style={{
+                                                  backgroundColor: '#0f172a',
+                                                  border: '1px solid var(--border-color)',
+                                                  borderRadius: '6px',
+                                                  padding: '1rem',
+                                                  fontSize: '0.75rem',
+                                                  color: '#cbd5e1',
+                                                  overflowX: 'auto',
+                                                  maxHeight: '220px',
+                                                  fontFamily: 'monospace',
+                                                  whiteSpace: 'pre-wrap',
+                                                  wordBreak: 'break-all'
+                                                }}>
+                                                          {JSON.stringify(skillGaps[career.role].roadmap_compatibility, null, 2)}
+                                                </pre>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </>
+                                      );
+                                    })()}
+                                  </>
+                                ) : (
+                                  <div style={{ color: '#f87171', fontStyle: 'italic', fontSize: '0.85rem', textAlign: 'center', padding: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+                                    <span>Failed to retrieve detailed gap analysis report.</span>
+                                    {gapErrors[career.role] && (
+                                      <span style={{ fontSize: '0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '0.25rem 0.75rem', borderRadius: '4px', border: '1px solid rgba(239, 68, 68, 0.2)', fontFamily: 'monospace', color: '#f87171' }}>
+                                        Error: {gapErrors[career.role]}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
                           {/* Related Careers */}
+
                           {career.related_careers.length > 0 && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Related Paths:</span>
