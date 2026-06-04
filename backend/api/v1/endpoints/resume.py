@@ -10,7 +10,12 @@ from core.config import settings
 
 router = APIRouter()
 
-@router.post("/upload", response_model=BaseResponse[ResumeParseData])
+@router.post(
+    "/upload", 
+    response_model=BaseResponse[ResumeParseData],
+    summary="Upload and parse a PDF resume",
+    description="Accepts a PDF file, validates its format (magic bytes) and size, extracts its text using pdfplumber, and returns structured metadata including filename, size, page count, and the extracted text content. The uploaded file is temporarily stored and immediately deleted after processing."
+)
 async def upload_resume(request: Request, file: UploadFile = File(...)):
     if not file.filename.lower().endswith(".pdf"):
         raise FileValidationException("Only PDF files are supported.")
