@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ResumeUpload } from '../components/ResumeUpload/ResumeUpload';
 import { formatFileSize } from '../utils/formatters';
-import { extractResumeInfo, classifySkills, getATSScore, getRecommendations, getSkillGapAnalysis } from '../services/api';
+import { extractResumeInfo, classifySkills, getATSScore, getRecommendations, getSkillGapAnalysis, generateRoadmap } from '../services/api';
+import { RoadmapDashboard } from './RoadmapDashboard';
 
 const CATEGORY_DISPLAY_NAMES = {
   'Programming Language': 'Programming Languages',
@@ -221,6 +222,25 @@ const isSkillMatched = (skillName, candidateSkills) => {
   });
 };
 
+const isDevModeEnabled = () => {
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_DEV_MODE === 'true') {
+      return true;
+    }
+  } catch (e) {}
+  try {
+    if (typeof window !== 'undefined') {
+      if (window.localStorage && window.localStorage.getItem('dev_mode') === 'true') {
+        return true;
+      }
+      if (window.__DEV_MODE__ === true) {
+        return true;
+      }
+    }
+  } catch (e) {}
+  return false;
+};
+
 export const AnalyzerPage = () => {
   const [parsedData, setParsedData] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
@@ -236,6 +256,9 @@ export const AnalyzerPage = () => {
   const [loadingGaps, setLoadingGaps] = useState({});
   const [showJson, setShowJson] = useState({});
   const [gapErrors, setGapErrors] = useState({});
+  const [activeRoadmap, setActiveRoadmap] = useState(null);
+  const [loadingRoadmap, setLoadingRoadmap] = useState({});
+  const [roadmapError, setRoadmapError] = useState({});
 
   const handleToggleGap = async (roleName, career) => {
     const isExpanded = !expandedGaps[roleName];
@@ -296,6 +319,49 @@ export const AnalyzerPage = () => {
           [roleName]: false
         }));
       }
+    }
+  };
+
+  const handleGenerateRoadmap = async (roleName, career) => {
+    setLoadingRoadmap(prev => ({ ...prev, [roleName]: true }));
+    setRoadmapError(prev => ({ ...prev, [roleName]: null }));
+
+    try {
+      const reqSkillsEnriched = (career?.required_skills || []).map(s => ({
+        name: s,
+        matched: isSkillMatched(s, processedData?.skills || [])
+      }));
+      const prefSkillsEnriched = (career?.preferred_skills || []).map(s => ({
+        name: s,
+        matched: isSkillMatched(s, processedData?.skills || [])
+      }));
+
+      const matched_skills = [
+        ...reqSkillsEnriched.filter(s => s.matched).map(s => s.name),
+        ...prefSkillsEnriched.filter(s => s.matched).map(s => s.name)
+      ];
+      const missing_skills = [
+        ...reqSkillsEnriched.filter(s => !s.matched).map(s => s.name),
+        ...prefSkillsEnriched.filter(s => !s.matched).map(s => s.name)
+      ];
+
+      const res = await generateRoadmap({
+        career: roleName,
+        matched_skills,
+        missing_skills,
+        career_readiness: skillGaps[roleName]?.career_readiness || 50,
+        projects: processedData?.projects?.map(p => typeof p === 'object' ? p.title : p) || [],
+        certifications: processedData?.certifications?.map(c => typeof c === 'object' ? c.name : c) || [],
+        education: processedData?.education?.map(e => typeof e === 'object' ? e.degree || e.school : e) || [],
+        ats_score: atsData?.ats_score || 70
+      });
+
+      setActiveRoadmap(res);
+    } catch (err) {
+      console.error("Roadmap generation failed:", err);
+      setRoadmapError(prev => ({ ...prev, [roleName]: err.message || "Failed to generate roadmap" }));
+    } finally {
+      setLoadingRoadmap(prev => ({ ...prev, [roleName]: false }));
     }
   };
 
@@ -1891,49 +1957,116 @@ export const AnalyzerPage = () => {
                                             )}
                                           </div>
 
-                                          {/* Roadmap Compatibility Layer Viewer */}
-                                          <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
-                                            <button
-                                              onClick={() => setShowJson(prev => ({ ...prev, [career.role]: !prev[career.role] }))}
-                                              style={{
-                                                backgroundColor: 'transparent',
-                                                border: '1px solid var(--border-color)',
-                                                color: 'var(--text-muted)',
-                                                fontSize: '0.8rem',
-                                                cursor: 'pointer',
-                                                padding: '0.4rem 0.8rem',
-                                                borderRadius: '6px',
-                                                transition: 'all 0.2s ease',
-                                                fontWeight: '600'
-                                              }}
-                                              onMouseEnter={(e) => { e.target.style.color = 'var(--text-light)'; e.target.style.borderColor = 'var(--text-light)'; }}
-                                              onMouseLeave={(e) => { e.target.style.color = 'var(--text-muted)'; e.target.style.borderColor = 'var(--border-color)'; }}
-                                            >
-                                              {showJson[career.role] ? 'Hide Roadmap Compatibility Data' : 'View Phase 7 Compatibility Layer (JSON)'}
-                                            </button>
-                                            {showJson[career.role] && (
-                                              <div style={{ marginTop: '0.75rem' }}>
-                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>
-                                                  The following JSON structure is designed for direct consumption by Phase 7 Roadmap Generation:
-                                                </span>
-                                                <pre style={{
-                                                  backgroundColor: '#0f172a',
+                                          {/* Roadmap Compatibility / Intelligence Summary */}
+                                          {isDevModeEnabled() ? (
+                                            <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
+                                              <button
+                                                onClick={() => setShowJson(prev => ({ ...prev, [career.role]: !prev[career.role] }))}
+                                                style={{
+                                                  backgroundColor: 'transparent',
                                                   border: '1px solid var(--border-color)',
+                                                  color: 'var(--text-muted)',
+                                                  fontSize: '0.8rem',
+                                                  cursor: 'pointer',
+                                                  padding: '0.4rem 0.8rem',
                                                   borderRadius: '6px',
-                                                  padding: '1rem',
-                                                  fontSize: '0.75rem',
-                                                  color: '#cbd5e1',
-                                                  overflowX: 'auto',
-                                                  maxHeight: '220px',
-                                                  fontFamily: 'monospace',
-                                                  whiteSpace: 'pre-wrap',
-                                                  wordBreak: 'break-all'
-                                                }}>
-                                                          {JSON.stringify(skillGaps[career.role].roadmap_compatibility, null, 2)}
-                                                </pre>
+                                                  transition: 'all 0.2s ease',
+                                                  fontWeight: '600'
+                                                }}
+                                                onMouseEnter={(e) => { e.target.style.color = 'var(--text-light)'; e.target.style.borderColor = 'var(--text-light)'; }}
+                                                onMouseLeave={(e) => { e.target.style.color = 'var(--text-muted)'; e.target.style.borderColor = 'var(--border-color)'; }}
+                                              >
+                                                {showJson[career.role] ? 'Hide Roadmap Compatibility Data' : 'View Phase 7 Compatibility Layer (JSON)'}
+                                              </button>
+                                              {showJson[career.role] && (
+                                                <div style={{ marginTop: '0.75rem' }}>
+                                                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>
+                                                    The following JSON structure is designed for direct consumption by Phase 7 Roadmap Generation:
+                                                  </span>
+                                                  <pre style={{
+                                                    backgroundColor: '#0f172a',
+                                                    border: '1px solid var(--border-color)',
+                                                    borderRadius: '6px',
+                                                    padding: '1rem',
+                                                    fontSize: '0.75rem',
+                                                    color: '#cbd5e1',
+                                                    overflowX: 'auto',
+                                                    maxHeight: '220px',
+                                                    fontFamily: 'monospace',
+                                                    whiteSpace: 'pre-wrap',
+                                                    wordBreak: 'break-all'
+                                                  }}>
+                                                            {JSON.stringify(skillGaps[career.role].roadmap_compatibility, null, 2)}
+                                                  </pre>
+                                                </div>
+                                              )}
+                                            </div>
+                                          ) : (
+                                            <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
+                                              <h4 style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-light)', marginBottom: '1rem', fontFamily: "'Outfit', sans-serif", display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                <span>🧠</span> Roadmap Intelligence Summary
+                                              </h4>
+                                              <div style={{
+                                                backgroundColor: 'rgba(99, 102, 241, 0.02)',
+                                                border: '1px solid rgba(99, 102, 241, 0.1)',
+                                                borderRadius: '8px',
+                                                padding: '1.25rem',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '0.75rem'
+                                              }}>
+                                                <div style={{ fontSize: '0.925rem', color: '#cbd5e1', lineHeight: '1.6' }}>
+                                                  For your transition into the <strong>{career.role}</strong> role, we calculated an estimated study timeline of <strong>{skillGaps[career.role].job_ready_time_months}</strong> (approx. {skillGaps[career.role].job_ready_time_weeks}). 
+                                                  Your initial readiness level is classified as <strong>{skillGaps[career.role].career_readiness_level}</strong> ({skillGaps[career.role].career_readiness}% match).
+                                                </div>
+                                                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', borderTop: '1px dashed var(--border-color)', paddingTop: '0.75rem' }}>
+                                                  💡 <strong>Key Recommendation:</strong> Focus on resolving the {skillGaps[career.role].critical_skills?.length || 0} critical skill gaps to jumpstart your career readiness level.
+                                                </div>
+                                                <div style={{ marginTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                  <button
+                                                    onClick={() => handleGenerateRoadmap(career.role, career)}
+                                                    disabled={loadingRoadmap[career.role]}
+                                                    style={{
+                                                      backgroundColor: '#6366f1',
+                                                      border: 'none',
+                                                      color: '#fff',
+                                                      fontSize: '0.85rem',
+                                                      cursor: 'pointer',
+                                                      padding: '0.6rem 1.2rem',
+                                                      borderRadius: '6px',
+                                                      transition: 'all 0.2s ease',
+                                                      fontWeight: '700',
+                                                      display: 'inline-flex',
+                                                      alignItems: 'center',
+                                                      justifyContent: 'center',
+                                                      gap: '0.5rem',
+                                                      boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
+                                                      outline: 'none',
+                                                      width: 'fit-content'
+                                                    }}
+                                                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#4f46e5'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                                                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#6366f1'; e.currentTarget.style.transform = 'none'; }}
+                                                  >
+                                                    {loadingRoadmap[career.role] ? (
+                                                      <>
+                                                        <div className="spinner" style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%' }}></div>
+                                                        <span>Generating Weekly Syllabus...</span>
+                                                      </>
+                                                    ) : (
+                                                      <>
+                                                        <span>🗺️</span> Generate Weekly Syllabus & Roadmap
+                                                      </>
+                                                    )}
+                                                  </button>
+                                                  {roadmapError[career.role] && (
+                                                    <span style={{ fontSize: '0.75rem', color: '#f87171', marginTop: '0.25rem' }}>
+                                                      ⚠️ {roadmapError[career.role]}
+                                                    </span>
+                                                  )}
+                                                </div>
                                               </div>
-                                            )}
-                                          </div>
+                                            </div>
+                                          )}
                                         </>
                                       );
                                     })()}
@@ -2009,6 +2142,24 @@ export const AnalyzerPage = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+      {activeRoadmap && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'var(--bg-dark)',
+          zIndex: 9999,
+          overflowY: 'auto'
+        }}>
+          <RoadmapDashboard 
+            roadmapData={activeRoadmap} 
+            onClose={() => setActiveRoadmap(null)} 
+            candidateName={cleanCandidateName(parsedData?.candidate_name)}
+          />
         </div>
       )}
     </div>

@@ -1,0 +1,212 @@
+{
+  "deep learning": [
+    {"name": "Coursera Deep Learning Specialization (Andrew Ng)", "url": "https://www.coursera.org/specializations/deep-learning", "type": "Course"},
+    {"name": "fast.ai Practical Deep Learning for Coders", "url": "https://course.fast.ai/", "type": "Course"},
+    {"name": "PyTorch Official Documentation", "url": "https://pytorch.org/docs/stable/index.html", "type": "Documentation"},
+    {"name": "TensorFlow Official Tutorials", "url": "https://www.tensorflow.org/tutorials", "type": "Documentation"},
+    {"name": "3Blue1Brown Neural Networks Series (YouTube)", "url": "https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi", "type": "Video"},
+    {"name": "Andrej Karpathy Neural Networks: Zero to Hero (YouTube)", "url": "https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ", "type": "Video"},
+    {"name": "Kaggle Deep Learning Competitions & Notebooks", "url": "https://www.kaggle.com/learn/deep-learning", "type": "Practice"},
+    {"name": "Deep Learning Book (Ian Goodfellow)", "url": "https://www.deeplearningbook.org/", "type": "Book"}
+  ],
+  "pytorch": [
+    {"name": "PyTorch for Deep Learning (freeCodeCamp)", "url": "https://www.youtube.com/watch?v=V_xro1bcAuA", "type": "Course"},
+    {"name": "Udemy: PyTorch for Deep Learning Bootcamp", "url": "https://www.udemy.com/course/pytorch-for-deep-learning-and-computer-vision/", "type": "Course"},
+    {"name": "Official PyTorch Tutorials", "url": "https://pytorch.org/tutorials/", "type": "Documentation"},
+    {"name": "PyTorch Hub Models", "url": "https://pytorch.org/hub/", "type": "Documentation"},
+    {"name": "Sentdex PyTorch Tutorials (YouTube)", "url": "https://www.youtube.com/playlist?list=PLQVvvaa0QuDdeMyHEYc0gxFpYwHY2Qfdh", "type": "Video"},
+    {"name": "PyTorch Lightning Crash Course (YouTube)", "url": "https://www.youtube.com/watch?v=DbESHcCoWbM", "type": "Video"},
+    {"name": "Kaggle PyTorch Practice", "url": "https://www.kaggle.com/", "type": "Practice"},
+    {"name": "Programming PyTorch for Deep Learning (O'Reilly)", "url": "https://www.oreilly.com/library/view/programming-pytorch-for/9781492045342/", "type": "Book"}
+  ],
+  "tensorflow": [
+    {"name": "DeepLearning.AI TensorFlow Developer Certificate", "url": "https://www.coursera.org/professional-certificates/tensorflow-in-practice", "type": "Course"},
+    {"name": "Udacity TensorFlow Free Course", "url": "https://www.udacity.com/course/intro-to-tensorflow-for-deep-learning--ud187", "type": "Course"},
+    {"name": "Official TensorFlow Guides", "url": "https://www.tensorflow.org/guide", "type": "Documentation"},
+    {"name": "Keras API Documentation", "url": "https://keras.io/api/", "type": "Documentation"},
+    {"name": "TensorFlow YouTube Channel", "url": "https://www.youtube.com/@TensorFlow", "type": "Video"},
+    {"name": "Keras with TensorFlow Course (freeCodeCamp)", "url": "https://www.youtube.com/watch?v=tPYj3fFJGjk", "type": "Video"},
+    {"name": "TensorFlow Playground", "url": "https://playground.tensorflow.org/", "type": "Practice"},
+    {"name": "Hands-On Machine Learning with Scikit-Learn, Keras & TensorFlow (Aurélien Géron)", "url": "https://www.oreilly.com/library/view/hands-on-machine-learning/9781098125967/", "type": "Book"}
+  ],
+  "nlp": [
+    {"name": "Stanford CS224n: NLP with Deep Learning", "url": "https://web.stanford.edu/class/cs224n/", "type": "Course"},
+    {"name": "Hugging Face NLP Course", "url": "https://huggingface.co/learn/nlp-course", "type": "Course"},
+    {"name": "NLTK Official Documentation", "url": "https://www.nltk.org/", "type": "Documentation"},
+    {"name": "spaCy Usage Documentation", "url": "https://spacy.io/usage", "type": "Documentation"},
+    {"name": "Hugging Face Transformers Explained (YouTube)", "url": "https://www.youtube.com/watch?v=TQQlZhbC5ps", "type": "Video"},
+    {"name": "Luis Serrano NLP Series (YouTube)", "url": "https://www.youtube.com/playlist?list=PLs8w1cZ-mnzfMaWXXD-dMcMbBGAGqTXq9", "type": "Video"},
+    {"name": "Kaggle NLP Competitions", "url": "https://www.kaggle.com/competitions?search=nlp", "type": "Practice"},
+    {"name": "Speech and Language Processing (Jurafsky & Martin)", "url": "https://web.stanford.edu/~jurafsky/slp3/", "type": "Book"}
+  ],
+  "llms": [
+    {"name": "Stanford CS324: Large Language Models", "url": "https://stanford-cs324.github.io/winter2022/", "type": "Course"},
+    {"name": "DeepLearning.AI LLMOps Course", "url": "https://www.deeplearning.ai/short-courses/llmops/", "type": "Course"},
+    {"name": "Hugging Face PEFT Documentation (LoRA/QLoRA)", "url": "https://huggingface.co/docs/peft", "type": "Documentation"},
+    {"name": "OpenAI API Reference", "url": "https://platform.openai.com/docs/api-reference", "type": "Documentation"},
+    {"name": "Andrej Karpathy Let's Build GPT (YouTube)", "url": "https://www.youtube.com/watch?v=kCc8FmEb1nY", "type": "Video"},
+    {"name": "Yannic Kilcher LLM Paper Reviews (YouTube)", "url": "https://www.youtube.com/@YannicKilcher", "type": "Video"},
+    {"name": "LM Studio — Local LLM Practice", "url": "https://lmstudio.ai/", "type": "Practice"},
+    {"name": "Build a Large Language Model From Scratch (Sebastian Raschka)", "url": "https://www.manning.com/books/build-a-large-language-model-from-scratch", "type": "Book"}
+  ],
+  "generative ai": [
+    {"name": "DeepLearning.AI Generative AI for Everyone", "url": "https://www.deeplearning.ai/courses/generative-ai-for-everyone/", "type": "Course"},
+    {"name": "Google Generative AI Learning Path", "url": "https://cloud.google.com/learn/training/machinelearning-ai", "type": "Course"},
+    {"name": "Hugging Face Diffusion Models Course", "url": "https://github.com/huggingface/diffusion-models-class", "type": "Documentation"},
+    {"name": "Stability AI Documentation", "url": "https://platform.stability.ai/docs/api-reference", "type": "Documentation"},
+    {"name": "Two Minute Papers (YouTube)", "url": "https://www.youtube.com/@TwoMinutePapers", "type": "Video"},
+    {"name": "Lex Fridman AI Interviews (YouTube)", "url": "https://www.youtube.com/@lexfridman", "type": "Video"},
+    {"name": "Replicate — Generative AI Playground", "url": "https://replicate.com/", "type": "Practice"},
+    {"name": "Generative Deep Learning (David Foster)", "url": "https://www.oreilly.com/library/view/generative-deep-learning/9781098134174/", "type": "Book"}
+  ],
+  "langchain": [
+    {"name": "LangChain for LLM Application Development (DeepLearning.AI)", "url": "https://www.deeplearning.ai/short-courses/langchain-for-llm-application-development/", "type": "Course"},
+    {"name": "LangChain: Chat with Your Data (DeepLearning.AI)", "url": "https://www.deeplearning.ai/short-courses/langchain-chat-with-your-data/", "type": "Course"},
+    {"name": "Official LangChain Python Documentation", "url": "https://python.langchain.com/docs/", "type": "Documentation"},
+    {"name": "LangChain Expression Language (LCEL) Guide", "url": "https://python.langchain.com/docs/expression_language/", "type": "Documentation"},
+    {"name": "LangChain Crash Course (Patrick Loeber, YouTube)", "url": "https://www.youtube.com/watch?v=LbT1yp6quS8", "type": "Video"},
+    {"name": "LangChain Agents Tutorial (YouTube)", "url": "https://www.youtube.com/watch?v=DZuKb1j0FJU", "type": "Video"},
+    {"name": "LangSmith — LangChain Debugging Platform", "url": "https://smith.langchain.com/", "type": "Practice"},
+    {"name": "LangChain Cookbook (Official)", "url": "https://github.com/langchain-ai/langchain/tree/master/cookbook", "type": "Book"}
+  ],
+  "llamaindex": [
+    {"name": "Building RAG Systems with LlamaIndex (DeepLearning.AI)", "url": "https://www.deeplearning.ai/short-courses/building-evaluating-advanced-rag/", "type": "Course"},
+    {"name": "Jerry Liu LlamaIndex Course (Coursera)", "url": "https://www.coursera.org/", "type": "Course"},
+    {"name": "Official LlamaIndex Documentation", "url": "https://docs.llamaindex.ai/en/stable/", "type": "Documentation"},
+    {"name": "LlamaIndex API Reference", "url": "https://docs.llamaindex.ai/en/stable/api_reference/", "type": "Documentation"},
+    {"name": "LlamaIndex Full Course (YouTube)", "url": "https://www.youtube.com/watch?v=Zyd2pNkYNy4", "type": "Video"},
+    {"name": "RAG with LlamaIndex Demo (YouTube)", "url": "https://www.youtube.com/watch?v=TRjq7t2Ms5I", "type": "Video"},
+    {"name": "LlamaHub — Community Integrations", "url": "https://llamahub.ai/", "type": "Practice"},
+    {"name": "Generative AI with LangChain & LlamaIndex (Packt)", "url": "https://www.packtpub.com/product/generative-ai-with-langchain/9781835083468", "type": "Book"}
+  ],
+  "machine learning": [
+    {"name": "Andrew Ng Machine Learning Specialization (Coursera)", "url": "https://www.coursera.org/specializations/machine-learning-introduction", "type": "Course"},
+    {"name": "fast.ai Introduction to Machine Learning", "url": "https://course.fast.ai/", "type": "Course"},
+    {"name": "Scikit-learn Official Documentation", "url": "https://scikit-learn.org/stable/", "type": "Documentation"},
+    {"name": "Google ML Crash Course", "url": "https://developers.google.com/machine-learning/crash-course", "type": "Documentation"},
+    {"name": "StatQuest with Josh Starmer (YouTube)", "url": "https://www.youtube.com/@statquest", "type": "Video"},
+    {"name": "Sentdex Machine Learning Tutorial (YouTube)", "url": "https://www.youtube.com/playlist?list=PLQVvvaa0QuDfKTOs3Keq_kaG2P55YRn5v", "type": "Video"},
+    {"name": "Kaggle Machine Learning Courses", "url": "https://www.kaggle.com/learn", "type": "Practice"},
+    {"name": "Hands-On Machine Learning (Aurélien Géron)", "url": "https://www.oreilly.com/library/view/hands-on-machine-learning/9781098125967/", "type": "Book"}
+  ],
+  "python": [
+    {"name": "Python for Everybody (Coursera — Dr. Chuck)", "url": "https://www.coursera.org/specializations/python", "type": "Course"},
+    {"name": "CS50's Introduction to Programming with Python (Harvard)", "url": "https://cs50.harvard.edu/python/2022/", "type": "Course"},
+    {"name": "Official Python Documentation", "url": "https://docs.python.org/3/", "type": "Documentation"},
+    {"name": "Real Python Guides", "url": "https://realpython.com/", "type": "Documentation"},
+    {"name": "Tech with Tim Python Full Course (YouTube)", "url": "https://www.youtube.com/watch?v=sxTmJE4k0ho", "type": "Video"},
+    {"name": "Corey Schafer Python Tutorials (YouTube)", "url": "https://www.youtube.com/playlist?list=PL-osiE80TeTt2d9bfVyTiXJA-UTHn6WwU", "type": "Video"},
+    {"name": "HackerRank Python Practice", "url": "https://www.hackerrank.com/domains/python", "type": "Practice"},
+    {"name": "Automate the Boring Stuff with Python (Al Sweigart)", "url": "https://automatetheboringstuff.com/", "type": "Book"}
+  ],
+  "docker": [
+    {"name": "Docker and Kubernetes: The Complete Guide (Udemy)", "url": "https://www.udemy.com/course/docker-and-kubernetes-the-complete-guide/", "type": "Course"},
+    {"name": "Docker Mastery with Kubernetes (Udemy — Bret Fisher)", "url": "https://www.udemy.com/course/docker-mastery/", "type": "Course"},
+    {"name": "Official Docker Documentation", "url": "https://docs.docker.com/", "type": "Documentation"},
+    {"name": "Docker Hub Registry", "url": "https://hub.docker.com/", "type": "Documentation"},
+    {"name": "Docker Tutorial for Beginners (TechWorld with Nana, YouTube)", "url": "https://www.youtube.com/watch?v=3c-iBn73dDE", "type": "Video"},
+    {"name": "Docker Full Course (freeCodeCamp, YouTube)", "url": "https://www.youtube.com/watch?v=kTp5xUtcalw", "type": "Video"},
+    {"name": "Play with Docker Labs", "url": "https://labs.play-with-docker.com/", "type": "Practice"},
+    {"name": "Docker: Up and Running (O'Reilly)", "url": "https://www.oreilly.com/library/view/docker-up/9781098131814/", "type": "Book"}
+  ],
+  "kubernetes": [
+    {"name": "Kubernetes for Absolute Beginners (Udemy — Mumshad)", "url": "https://www.udemy.com/course/learn-kubernetes/", "type": "Course"},
+    {"name": "Certified Kubernetes Administrator (CKA) Prep (Udemy)", "url": "https://www.udemy.com/course/certified-kubernetes-administrator-with-practice-tests/", "type": "Course"},
+    {"name": "Official Kubernetes Documentation", "url": "https://kubernetes.io/docs/home/", "type": "Documentation"},
+    {"name": "Kubernetes GitHub Repository", "url": "https://github.com/kubernetes/kubernetes", "type": "Documentation"},
+    {"name": "Kubernetes Crash Course (TechWorld with Nana, YouTube)", "url": "https://www.youtube.com/watch?v=s_o8dwzRlu4", "type": "Video"},
+    {"name": "Kubernetes Tutorial Full Course (freeCodeCamp, YouTube)", "url": "https://www.youtube.com/watch?v=d6WC5n9G_sM", "type": "Video"},
+    {"name": "Killercoda Kubernetes Labs", "url": "https://killercoda.com/playgrounds/scenario/kubernetes", "type": "Practice"},
+    {"name": "Kubernetes: Up and Running (O'Reilly)", "url": "https://www.oreilly.com/library/view/kubernetes-up-and/9781098110192/", "type": "Book"}
+  ],
+  "aws": [
+    {"name": "AWS Cloud Practitioner Essentials (AWS Training)", "url": "https://aws.amazon.com/training/digital/aws-cloud-practitioner-essentials/", "type": "Course"},
+    {"name": "Ultimate AWS Certified Solutions Architect (Udemy — Stephane Maarek)", "url": "https://www.udemy.com/course/aws-certified-solutions-architect-associate-saa-c03/", "type": "Course"},
+    {"name": "AWS Official Documentation", "url": "https://docs.aws.amazon.com/", "type": "Documentation"},
+    {"name": "AWS Well-Architected Framework", "url": "https://aws.amazon.com/architecture/well-architected/", "type": "Documentation"},
+    {"name": "freeCodeCamp AWS Full Course (YouTube)", "url": "https://www.youtube.com/watch?v=SOTamWNgDKc", "type": "Video"},
+    {"name": "Exampro AWS Solutions Architect (YouTube)", "url": "https://www.youtube.com/watch?v=Ia-UEYYR44s", "type": "Video"},
+    {"name": "AWS Free Tier Labs", "url": "https://aws.amazon.com/free/", "type": "Practice"},
+    {"name": "AWS Certified Solutions Architect Study Guide (Wiley)", "url": "https://www.wiley.com/en-us/AWS+Certified+Solutions+Architect+Study+Guide-p-9781119982623", "type": "Book"}
+  ],
+  "react": [
+    {"name": "React — The Complete Guide (Udemy — Maximilian Schwarzmüller)", "url": "https://www.udemy.com/course/react-the-complete-guide-incl-redux/", "type": "Course"},
+    {"name": "Full Stack Open (React, Helsinki University)", "url": "https://fullstackopen.com/en/", "type": "Course"},
+    {"name": "Official React Documentation", "url": "https://react.dev/", "type": "Documentation"},
+    {"name": "React GitHub Repository", "url": "https://github.com/facebook/react", "type": "Documentation"},
+    {"name": "Traversy Media React Crash Course (YouTube)", "url": "https://www.youtube.com/watch?v=w7ejDZ8SWv8", "type": "Video"},
+    {"name": "Jack Herrington React 18 Series (YouTube)", "url": "https://www.youtube.com/@jherr", "type": "Video"},
+    {"name": "Frontend Mentor React Challenges", "url": "https://www.frontendmentor.io/challenges", "type": "Practice"},
+    {"name": "Learning React (O'Reilly)", "url": "https://www.oreilly.com/library/view/learning-react-2nd/9781492051718/", "type": "Book"}
+  ],
+  "sql": [
+    {"name": "SQL for Data Science (Coursera — UC Davis)", "url": "https://www.coursera.org/learn/sql-for-data-science", "type": "Course"},
+    {"name": "The Complete SQL Bootcamp (Udemy — Jose Portilla)", "url": "https://www.udemy.com/course/the-complete-sql-bootcamp/", "type": "Course"},
+    {"name": "PostgreSQL Official Documentation", "url": "https://www.postgresql.org/docs/", "type": "Documentation"},
+    {"name": "MySQL Reference Manual", "url": "https://dev.mysql.com/doc/refman/8.0/en/", "type": "Documentation"},
+    {"name": "Programming with Mosh SQL Tutorial (YouTube)", "url": "https://www.youtube.com/watch?v=7S_tz1z_5bA", "type": "Video"},
+    {"name": "SQL Tutorial Full Database Course (freeCodeCamp, YouTube)", "url": "https://www.youtube.com/watch?v=HXV3zeQKqGY", "type": "Video"},
+    {"name": "SQLZoo Interactive Practice", "url": "https://sqlzoo.net/", "type": "Practice"},
+    {"name": "Learning SQL (Alan Beaulieu — O'Reilly)", "url": "https://www.oreilly.com/library/view/learning-sql-3rd/9781492057604/", "type": "Book"}
+  ],
+  "mlops": [
+    {"name": "Machine Learning Engineering for Production MLOps (Coursera)", "url": "https://www.coursera.org/specializations/machine-learning-engineering-for-production-mlops", "type": "Course"},
+    {"name": "MLOps Zoomcamp (DataTalks.Club)", "url": "https://github.com/DataTalks-Club/mlops-zoomcamp", "type": "Course"},
+    {"name": "MLflow Documentation", "url": "https://mlflow.org/docs/latest/index.html", "type": "Documentation"},
+    {"name": "DVC (Data Version Control) Documentation", "url": "https://dvc.org/doc", "type": "Documentation"},
+    {"name": "MLOps Explained (YouTube — AssemblyAI)", "url": "https://www.youtube.com/watch?v=Zvd276j9sZ8", "type": "Video"},
+    {"name": "Weights & Biases MLOps Course (YouTube)", "url": "https://www.youtube.com/watch?v=9zrmUIlScdY", "type": "Video"},
+    {"name": "Weights & Biases Experiment Tracking", "url": "https://wandb.ai/", "type": "Practice"},
+    {"name": "Designing Machine Learning Systems (Chip Huyen)", "url": "https://www.oreilly.com/library/view/designing-machine-learning/9781098107956/", "type": "Book"}
+  ],
+  "solidity": [
+    {"name": "Ethereum Developer Bootcamp (Alchemy University)", "url": "https://university.alchemy.com/", "type": "Course"},
+    {"name": "CryptoZombies — Learn Solidity by Building Games", "url": "https://cryptozombies.io/", "type": "Course"},
+    {"name": "Official Solidity Documentation", "url": "https://docs.soliditylang.org/", "type": "Documentation"},
+    {"name": "OpenZeppelin Contracts Documentation", "url": "https://docs.openzeppelin.com/contracts/", "type": "Documentation"},
+    {"name": "Dapp University Solidity Tutorial (YouTube)", "url": "https://www.youtube.com/watch?v=EhPeHeoKF88", "type": "Video"},
+    {"name": "Patrick Collins Solidity Full Course (YouTube)", "url": "https://www.youtube.com/watch?v=gyMwXuJrbJQ", "type": "Video"},
+    {"name": "Remix IDE — Solidity Playground", "url": "https://remix.ethereum.org/", "type": "Practice"},
+    {"name": "Mastering Ethereum (Andreas M. Antonopoulos)", "url": "https://github.com/ethereumbook/ethereumbook", "type": "Book"}
+  ],
+  "terraform": [
+    {"name": "HashiCorp Terraform Associate Certification (Udemy)", "url": "https://www.udemy.com/course/terraform-beginner-to-advanced/", "type": "Course"},
+    {"name": "Terraform on AWS (Udemy — Derek Morgan)", "url": "https://www.udemy.com/course/terraform-on-aws-with-sre-iaac-devops-real-world-demos/", "type": "Course"},
+    {"name": "Official Terraform Documentation", "url": "https://developer.hashicorp.com/terraform/docs", "type": "Documentation"},
+    {"name": "Terraform Registry", "url": "https://registry.terraform.io/", "type": "Documentation"},
+    {"name": "Terraform Full Course (TechWorld with Nana, YouTube)", "url": "https://www.youtube.com/watch?v=7xngnjfIlK4", "type": "Video"},
+    {"name": "Terraform for AWS — Full Course (freeCodeCamp, YouTube)", "url": "https://www.youtube.com/watch?v=SLB_c_ayRMo", "type": "Video"},
+    {"name": "HashiCorp Terraform Playground", "url": "https://developer.hashicorp.com/terraform/tutorials/aws-get-started", "type": "Practice"},
+    {"name": "Terraform: Up and Running (Yevgeniy Brikman)", "url": "https://www.oreilly.com/library/view/terraform-up-and/9781098116736/", "type": "Book"}
+  ],
+  "javascript": [
+    {"name": "The Complete JavaScript Course 2024 (Udemy — Jonas Schmedtmann)", "url": "https://www.udemy.com/course/the-complete-javascript-course/", "type": "Course"},
+    {"name": "JavaScript Algorithms and Data Structures (freeCodeCamp)", "url": "https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/", "type": "Course"},
+    {"name": "MDN JavaScript Reference", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript", "type": "Documentation"},
+    {"name": "javascript.info — Modern JavaScript Tutorial", "url": "https://javascript.info/", "type": "Documentation"},
+    {"name": "Traversy Media JavaScript Crash Course (YouTube)", "url": "https://www.youtube.com/watch?v=hdI2bqOjy3c", "type": "Video"},
+    {"name": "Akshay Saini Namaste JavaScript (YouTube)", "url": "https://www.youtube.com/playlist?list=PLlasXeu85E9cQ32gLCvAvr9vNaUccPVNP", "type": "Video"},
+    {"name": "LeetCode JavaScript Practice", "url": "https://leetcode.com/problemset/all/?difficulty=Easy&page=1&topicSlugs=javascript", "type": "Practice"},
+    {"name": "You Don't Know JS (Kyle Simpson — O'Reilly)", "url": "https://github.com/getify/You-Dont-Know-JS", "type": "Book"}
+  ],
+  "data engineering": [
+    {"name": "Data Engineering Zoomcamp (DataTalks.Club)", "url": "https://github.com/DataTalks-Club/data-engineering-zoomcamp", "type": "Course"},
+    {"name": "IBM Data Engineering Professional Certificate (Coursera)", "url": "https://www.coursera.org/professional-certificates/ibm-data-engineer", "type": "Course"},
+    {"name": "Apache Airflow Documentation", "url": "https://airflow.apache.org/docs/", "type": "Documentation"},
+    {"name": "dbt Documentation", "url": "https://docs.getdbt.com/", "type": "Documentation"},
+    {"name": "Data Engineering Full Course (YouTube — Darshil Parmar)", "url": "https://www.youtube.com/watch?v=yvBR71D0nAQ", "type": "Video"},
+    {"name": "Seattle Data Guy (YouTube)", "url": "https://www.youtube.com/@SeattleDataGuy", "type": "Video"},
+    {"name": "dbt Cloud Sandbox", "url": "https://cloud.getdbt.com/", "type": "Practice"},
+    {"name": "Fundamentals of Data Engineering (O'Reilly)", "url": "https://www.oreilly.com/library/view/fundamentals-of-data/9781098108298/", "type": "Book"}
+  ],
+  "penetration testing": [
+    {"name": "Ethical Hacking Bootcamp (Udemy — Zaid Al-Quraishi)", "url": "https://www.udemy.com/course/learn-ethical-hacking-from-scratch/", "type": "Course"},
+    {"name": "CompTIA PenTest+ Certification Prep (Udemy)", "url": "https://www.udemy.com/course/pentestplus/", "type": "Course"},
+    {"name": "OWASP Testing Guide", "url": "https://owasp.org/www-project-web-security-testing-guide/", "type": "Documentation"},
+    {"name": "Kali Linux Tools Documentation", "url": "https://tools.kali.org/tools-listing", "type": "Documentation"},
+    {"name": "Network Chuck Ethical Hacking (YouTube)", "url": "https://www.youtube.com/playlist?list=PLIhvC56v63IJIujb5cyE13oLuyORZpdkL", "type": "Video"},
+    {"name": "John Hammond Hacking Walkthroughs (YouTube)", "url": "https://www.youtube.com/@_JohnHammond", "type": "Video"},
+    {"name": "HackTheBox Practice Labs", "url": "https://www.hackthebox.com/", "type": "Practice"},
+    {"name": "The Web Application Hacker's Handbook", "url": "https://www.wiley.com/en-us/The+Web+Application+Hacker%27s+Handbook%3A+Finding+and+Exploiting+Security+Flaws%2C+2nd+Edition-p-9781118026472", "type": "Book"}
+  ]
+}

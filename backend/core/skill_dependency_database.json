@@ -1,89 +1,81 @@
 {
-  "deep learning": [
-    "Python",
-    "Machine Learning"
-  ],
-  "llms": [
-    "Deep Learning",
-    "NLP"
-  ],
-  "langchain": [
-    "LLMs"
-  ],
-  "llamaindex": [
-    "LLMs"
-  ],
-  "nlp": [
-    "Python",
-    "Machine Learning"
-  ],
-  "generative ai": [
-    "LLMs"
-  ],
-  "pytorch": [
-    "Python",
-    "Deep Learning"
-  ],
-  "tensorflow": [
-    "Python",
-    "Deep Learning"
-  ],
-  "scikit-learn": [
-    "Python",
-    "Machine Learning"
-  ],
-  "fastapi": [
-    "Python"
-  ],
-  "django": [
-    "Python"
-  ],
-  "flask": [
-    "Python"
-  ],
-  "next.js": [
-    "React",
-    "JavaScript"
-  ],
-  "react": [
-    "JavaScript",
-    "HTML5",
-    "CSS3"
-  ],
-  "typescript": [
-    "JavaScript"
-  ],
-  "nestjs": [
-    "TypeScript",
-    "Node.js"
-  ],
-  "express.js": [
-    "Node.js",
-    "JavaScript"
-  ],
-  "docker": [
-    "Linux"
-  ],
-  "kubernetes": [
-    "Docker"
-  ],
-  "mlops": [
-    "Docker",
-    "Machine Learning"
-  ],
-  "ci/cd": [
-    "Git"
-  ],
-  "github actions": [
-    "Git"
-  ],
-  "aws": [
-    "Cloud Computing"
-  ],
-  "azure": [
-    "Cloud Computing"
-  ],
-  "gcp": [
-    "Cloud Computing"
-  ]
+  "deep learning": ["Python", "Machine Learning"],
+  "pytorch": ["Python", "Deep Learning"],
+  "tensorflow": ["Python", "Deep Learning"],
+  "nlp": ["Python", "Machine Learning"],
+  "llms": ["Deep Learning", "NLP"],
+  "generative ai": ["LLMs"],
+  "langchain": ["LLMs", "Python"],
+  "llamaindex": ["LLMs", "Python"],
+  "rag": ["LangChain", "LlamaIndex"],
+  "mlops": ["Docker", "Machine Learning", "Python"],
+  "scikit-learn": ["Python", "Machine Learning"],
+  "computer vision": ["Python", "Deep Learning"],
+  "reinforcement learning": ["Python", "Deep Learning", "Machine Learning"],
+  "data engineering": ["Python", "SQL"],
+  "apache spark": ["Python", "SQL", "Data Engineering"],
+  "airflow": ["Python", "Data Engineering"],
+  "dbt": ["SQL", "Data Engineering"],
+  "tableau": ["SQL"],
+  "power bi": ["SQL"],
+  "fastapi": ["Python"],
+  "django": ["Python"],
+  "flask": ["Python"],
+  "sqlalchemy": ["Python", "SQL"],
+  "react": ["JavaScript", "HTML5", "CSS3"],
+  "next.js": ["React", "JavaScript"],
+  "typescript": ["JavaScript"],
+  "vue.js": ["JavaScript"],
+  "angular": ["TypeScript", "JavaScript"],
+  "node.js": ["JavaScript"],
+  "express.js": ["Node.js", "JavaScript"],
+  "nestjs": ["TypeScript", "Node.js"],
+  "graphql": ["REST APIs"],
+  "redux": ["React"],
+  "docker": ["Linux"],
+  "kubernetes": ["Docker"],
+  "terraform": ["Cloud Computing"],
+  "ansible": ["Linux"],
+  "helm": ["Kubernetes"],
+  "ci/cd": ["Git"],
+  "github actions": ["Git", "CI/CD"],
+  "jenkins": ["Git", "CI/CD"],
+  "aws": ["Cloud Computing"],
+  "azure": ["Cloud Computing"],
+  "gcp": ["Cloud Computing"],
+  "aws lambda": ["AWS", "Python"],
+  "aws eks": ["Kubernetes", "AWS"],
+  "aws s3": ["AWS"],
+  "aws rds": ["AWS", "SQL"],
+  "postgresql": ["SQL"],
+  "mongodb": ["NoSQL"],
+  "redis": ["Databases"],
+  "kafka": ["Message Queues"],
+  "elasticsearch": ["Databases"],
+  "penetration testing": ["Linux", "Networking"],
+  "network security": ["Networking"],
+  "cryptography": ["Mathematics"],
+  "owasp": ["Web Security"],
+  "siem": ["Network Security"],
+  "incident response": ["SIEM", "Network Security"],
+  "solidity": ["Blockchain Fundamentals"],
+  "ethereum": ["Blockchain Fundamentals"],
+  "web3.js": ["JavaScript", "Ethereum"],
+  "hardhat": ["Solidity", "Ethereum"],
+  "smart contracts": ["Solidity"],
+  "defi protocols": ["Smart Contracts", "Ethereum"],
+  "react native": ["React", "JavaScript"],
+  "flutter": ["Dart"],
+  "swift": ["iOS Development"],
+  "kotlin": ["Android Development"],
+  "xcode": ["Swift"],
+  "android studio": ["Kotlin"],
+  "figma": ["UI/UX Design"],
+  "wireframing": ["UI/UX Design"],
+  "prototyping": ["Figma"],
+  "user research": ["UI/UX Design"],
+  "product roadmapping": ["Product Management"],
+  "agile": ["Product Management"],
+  "jira": ["Agile"],
+  "okrs": ["Product Management"]
 }

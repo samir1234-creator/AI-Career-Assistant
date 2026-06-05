@@ -105,21 +105,13 @@ class CareerRecommendationService:
     def calculate_recommendations(self, data: CareerRecommendationRequest) -> List[CareerRecommendation]:
         """
         Calculates match scores for all careers in the database and returns the top 5 sorted recommendations.
-        Uses upgraded weighted scoring:
-        - 40% Skill Match
-        - 20% Project Relevance
-        - 10% Certification Relevance
-        - 10% Education Relevance
-        - 10% ATS Score
-        - 10% Career Demand
+        Uses the unified Career Intelligence Scoring Engine.
         """
+        from services.career_scoring_engine import CareerScoringEngine
         results_with_scores = []
         generic_skills_lower = {"python", "java", "c++", "c#", "sql", "git", "docker", "kubernetes", "linux", "html5", "css3", "javascript", "typescript", "it", "excel"}
         
         for role, metadata in self.career_db.items():
-            score = 0.0
-            reasons = []
-            
             required_skills = metadata.get("required_skills", [])
             preferred_skills = metadata.get("preferred_skills", [])
             role_category = metadata.get("category", "")
@@ -137,134 +129,93 @@ class CareerRecommendationService:
             non_generic_req_skills = [s for s in required_skills if s.lower() not in generic_skills_lower]
             non_generic_pref_skills = [s for s in preferred_skills if s.lower() not in generic_skills_lower]
             
-            # 1. Skill Match (max 40 points)
-            # Use 10.0 points per required match and 6.0 points per preferred match to balance general software roles
-            matched_req = 0
+            # Identify matched and missing required/preferred skills
+            matched_req = []
             for skill in required_skills:
                 if any(self._is_match(skill, cand_skill) for cand_skill in data.skills):
-                    matched_req += 1
-                    reasons.append(f"{skill} detected")
-            req_score = min(matched_req * 10.0, 28.0)
-                
-            matched_pref = 0
+                    matched_req.append(skill)
+                    
+            matched_pref = []
             for skill in preferred_skills:
                 if any(self._is_match(skill, cand_skill) for cand_skill in data.skills):
-                    matched_pref += 1
-                    reasons.append(f"{skill} detected")
-            pref_score = min(matched_pref * 6.0, 12.0)
-                
-            score += (req_score + pref_score)
-            
-            # 2. Project Relevance (max 20 points)
-            project_score = 0.0
-            has_relevant_project = False
-            
-            # Check for direct match (20 points)
+                    matched_pref.append(skill)
+
+            matched_skills_names = matched_req + matched_pref
+            missing_skills_names = [s for s in required_skills + preferred_skills if s not in matched_skills_names]
+
+            # Filter relevant projects
+            relevant_projects = []
             for p_desc in data.projects:
-                if self._is_match(role, p_desc) or self._is_match(role_category, p_desc):
-                    project_score = 20.0
-                    has_relevant_project = True
-                    break
+                if (self._is_match(role, p_desc) or 
+                    self._is_match(role_category, p_desc) or
+                    any(self._is_match(kw, p_desc) for kw in derived_keywords + required_keywords + non_generic_req_skills + non_generic_pref_skills)):
+                    relevant_projects.append(p_desc)
                     
-            # Check for keyword/non-generic skill match (15 points)
-            if not has_relevant_project:
-                for p_desc in data.projects:
-                    # Match derived keywords, required_keywords, or domain-specific required/preferred skills
-                    if any(self._is_match(kw, p_desc) for kw in derived_keywords + required_keywords + non_generic_req_skills + non_generic_pref_skills):
-                        project_score = 15.0
-                        has_relevant_project = True
-                        break
-                        
-            score += project_score
-            if has_relevant_project:
-                reasons.append("Relevant project experience found")
-                
-            # 3. Certification Relevance (max 10 points)
-            cert_score = 0.0
-            has_relevant_cert = False
-            
-            # Check for direct match (10 points)
+            # Filter relevant certifications
+            relevant_certs = []
             for cert_desc in data.certifications:
-                if self._is_match(role, cert_desc) or self._is_match(role_category, cert_desc):
-                    cert_score = 10.0
-                    has_relevant_cert = True
-                    break
-                    
-            # Check for keyword/non-generic skill match (8 points)
-            if not has_relevant_cert:
-                for cert_desc in data.certifications:
-                    if any(self._is_match(kw, cert_desc) for kw in derived_keywords + required_keywords + non_generic_req_skills + non_generic_pref_skills):
-                        cert_score = 8.0
-                        has_relevant_cert = True
-                        break
-                        
-            score += cert_score
-            if has_relevant_cert:
+                if (self._is_match(role, cert_desc) or 
+                    self._is_match(role_category, cert_desc) or
+                    any(self._is_match(kw, cert_desc) for kw in derived_keywords + required_keywords + non_generic_req_skills + non_generic_pref_skills)):
+                    relevant_certs.append(cert_desc)
+
+            # Delegate to unified CareerScoringEngine
+            scores = CareerScoringEngine.calculate_scores(
+                career_name=role,
+                matched_skills=matched_skills_names,
+                missing_skills=missing_skills_names,
+                projects=relevant_projects,
+                certifications=relevant_certs,
+                education=data.education,
+                ats_score=data.ats_score,
+                demand_level=future_demand
+            )
+            
+            match_score = scores["current_readiness"]
+            
+            # Generate reasoning explanation
+            reasons = []
+            for s in matched_req:
+                reasons.append(f"{s} detected")
+            for s in matched_pref:
+                reasons.append(f"{s} detected")
+            if relevant_projects:
+                reasons.append("Relevant project experience found")
+            if relevant_certs:
                 reasons.append("Relevant certification listed")
-                
-            # 4. Education Relevance (max 10 points)
-            edu_score = 0.0
+            
+            # STEM alignment
             has_stem = False
             stem_keywords = ["computer science", "software", "engineering", "information technology", "mathematics", "statistics", "it"]
-            
-            if data.education:
-                for edu_desc in data.education:
-                    for keyword in stem_keywords:
-                        if self._is_match(keyword, edu_desc):
-                            has_stem = True
-                            break
-                    if has_stem:
+            for edu_desc in data.education:
+                for keyword in stem_keywords:
+                    if self._is_match(keyword, edu_desc):
+                        has_stem = True
                         break
-                edu_score = 10.0 if has_stem else 7.0
-            score += edu_score
             if has_stem:
                 reasons.append("STEM-aligned educational background")
             elif data.education:
                 reasons.append("Educational background documented")
-                
-            # 5. ATS Score Weight (max 10 points)
-            ats_contrib = (data.ats_score / 100.0) * 10.0
-            score += ats_contrib
             if data.ats_score >= 70:
                 reasons.append("Strong overall ATS score")
                 
-            # 6. Career Demand (max 10 points)
-            demand_score = 7.0
-            if future_demand.lower() == "high":
-                demand_score = 10.0
-            elif future_demand.lower() == "low":
-                demand_score = 4.0
-            score += demand_score
-            
-            score_float = score
-            
-            # Disqualify/heavily penalize roles with absolutely zero domain match to improve matching realism
-            if matched_req == 0 and matched_pref == 0 and not has_relevant_project and not has_relevant_cert:
-                score_float = 0.0
-                
-            # Cap final score float at 100
-            score_float = min(score_float, 100.0)
-            
-            # Add match ratio tie-breaker to favor candidates with higher coverage of required skills
-            if required_skills:
-                score_float += (matched_req / len(required_skills)) * 2.0
-            
-            # Deduplicate reasons list
             unique_reasons = []
             for r in reasons:
                 if r not in unique_reasons:
                     unique_reasons.append(r)
-                    
-            # Cap reasons at top 4
             final_reasons = unique_reasons[:4]
             if not final_reasons:
                 final_reasons = ["Skills and profile show general technical alignment"]
-                
+
+            # Disqualify if no skill matches and no projects/certs match
+            if len(matched_skills_names) == 0 and len(relevant_projects) == 0 and len(relevant_certs) == 0:
+                match_score = 0
+
             rec = CareerRecommendation(
                 role=role,
                 category=role_category,
                 description=description,
-                match_score=int(round(min(score_float, 100.0))),
+                match_score=match_score,
                 reason=final_reasons,
                 difficulty_level=difficulty_level,
                 growth_level=growth_level,
@@ -273,7 +224,14 @@ class CareerRecommendationService:
                 required_skills=required_skills,
                 preferred_skills=preferred_skills
             )
-            results_with_scores.append((score_float, rec))
+            results_with_scores.append((match_score, rec))
+            
+        # Sort recommendations by match score descending, then by role name alphabetically
+        results_with_scores.sort(key=lambda x: (-x[0], x[1].role))
+        recommendations = [x[1] for x in results_with_scores]
+        
+        # Return top 5 recommendations
+        return recommendations[:5]
             
         # Sort recommendations by float score descending, then by role name alphabetically
         results_with_scores.sort(key=lambda x: (-x[0], x[1].role))

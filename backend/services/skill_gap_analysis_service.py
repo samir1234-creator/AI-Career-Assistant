@@ -259,31 +259,27 @@ class SkillGapAnalysisService:
         roadmap_compatibility = []
         missing_categories = {}
 
-        total_penalty = 0.0
-        job_ready_min_weeks = 0.0
-        job_ready_max_weeks = 0.0
-
         raw_missing_list = []
+
+        from services.duration_engine import DurationEngine
+        from services.career_scoring_engine import CareerScoringEngine
 
         for skill in missing_skills:
             skill_lower = skill.lower().strip()
             priority = None
             impact_score = None
-            learning_time = None
 
             # 1. Lookup in career metadata
             if skill_lower in db_skills_meta:
                 meta = db_skills_meta[skill_lower]
                 priority = meta.get("priority")
                 impact_score = meta.get("impact_score")
-                learning_time = meta.get("estimated_learning_time")
 
             # 2. Lookup in defaults
             default_meta = SKILL_METADATA_DEFAULTS.get(skill_lower)
             if default_meta:
                 priority = priority or default_meta.get("priority")
                 impact_score = impact_score or default_meta.get("impact_score")
-                learning_time = learning_time or default_meta.get("estimated_learning_time")
 
             # 3. Fallback based on career lists
             if career_entry:
@@ -293,38 +289,25 @@ class SkillGapAnalysisService:
                 if skill_lower in req_list_lower:
                     priority = priority or "critical"
                     impact_score = impact_score or 85
-                    learning_time = learning_time or "4 weeks"
                 elif skill_lower in pref_list_lower:
                     priority = priority or "optional"
                     impact_score = impact_score or 45
-                    learning_time = learning_time or "2 weeks"
 
             # 4. Ultimate defaults
             priority = (priority or "optional").strip().title()
             impact_score = impact_score or 30
-            learning_time = learning_time or "2 weeks"
 
             if priority.lower() == "critical":
                 priority_clean = "Critical"
-                penalty_weight = 0.095
             elif priority.lower() == "important":
                 priority_clean = "Important"
-                penalty_weight = 0.065
             else:
                 priority_clean = "Optional"
-                penalty_weight = 0.02
 
-            total_penalty += impact_score * penalty_weight
-
-            # Parse learning time range
-            min_w, max_w = self._parse_weeks_range(learning_time)
-            
-            # Accumulate time for critical/important skills
-            if priority_clean in ["Critical", "Important"]:
-                job_ready_min_weeks += min_w
-                job_ready_max_weeks += max_w
-
-            effort_score = self._get_effort_score(max_w, priority_clean, skill)
+            # Get duration in weeks from shared DurationEngine
+            weeks = DurationEngine.get_skill_duration_weeks(skill, matched_skills, self.dependency_db)
+            learning_time = f"{weeks} week" if weeks == 1 else f"{weeks} weeks"
+            effort_score = self._get_effort_score(weeks, priority_clean, skill)
 
             gap_item = SkillGapItem(
                 skill=skill,
@@ -338,7 +321,7 @@ class SkillGapAnalysisService:
                 "skill": skill,
                 "priority": priority_clean,
                 "impact_score": impact_score,
-                "learning_time_weeks": int(round(max_w))
+                "learning_time_weeks": weeks
             })
 
             if priority_clean == "Critical":
@@ -375,7 +358,7 @@ class SkillGapAnalysisService:
                 skill=skill,
                 priority=priority_clean.lower(),
                 impact_score=impact_score,
-                learning_time_weeks=int(round(max_w)),
+                learning_time_weeks=weeks,
                 dependencies=raw_deps
             ))
 
@@ -384,9 +367,19 @@ class SkillGapAnalysisService:
         important_skills.sort(key=lambda x: -x.impact_score)
         optional_skills.sort(key=lambda x: -x.impact_score)
 
-        # Career Readiness Score
-        readiness_score = int(round(100.0 - total_penalty))
-        readiness_score = max(0, min(100, readiness_score))
+        # Delegate score calculations to unified CareerScoringEngine
+        scores = CareerScoringEngine.calculate_scores(
+            career_name=career_name,
+            matched_skills=matched_skills,
+            missing_skills=missing_skills,
+            projects=payload.projects,
+            certifications=payload.certifications,
+            education=payload.education,
+            ats_score=payload.ats_score,
+            demand_level=career_entry.get("future_demand", "Medium") if career_entry else "Medium"
+        )
+        
+        readiness_score = scores["current_readiness"]
 
         # Career Readiness Severity mapping
         if readiness_score >= 91:
@@ -405,25 +398,17 @@ class SkillGapAnalysisService:
             gap_severity = "High Gap"
             readiness_level = "Beginner"
 
-        # Job Ready Ranges Formatting (Weeks and Months)
-        min_w_int = int(round(job_ready_min_weeks))
-        max_w_int = int(round(job_ready_max_weeks))
-        if min_w_int == max_w_int:
-            job_ready_time_weeks = f"{min_w_int} Week" if min_w_int == 1 else f"{min_w_int} Weeks"
-        else:
-            job_ready_time_weeks = f"{min_w_int}-{max_w_int} Weeks"
+        # Delegate total duration to DurationEngine
+        duration_info = DurationEngine.calculate_total_duration(
+            missing_skills=missing_skills,
+            matched_skills=matched_skills,
+            dependency_db=self.dependency_db
+        )
+        total_weeks = duration_info["total_weeks"]
+        total_months = duration_info["total_months"]
 
-        min_m_int = int(round(job_ready_min_weeks / 4.0))
-        max_m_int = int(round(job_ready_max_weeks / 4.0))
-        if min_w_int > 0 and min_m_int == 0:
-            min_m_int = 1
-        if max_w_int > 0 and max_m_int == 0:
-            max_m_int = 1
-
-        if min_m_int == max_m_int:
-            job_ready_time_months = f"{min_m_int} Month" if min_m_int == 1 else f"{min_m_int} Months"
-        else:
-            job_ready_time_months = f"{min_m_int}-{max_m_int} Months"
+        job_ready_time_weeks = f"{total_weeks} Weeks"
+        job_ready_time_months = f"{total_months} Months"
 
         # Exact learning priority ranking (topological sort)
         priority_ranking = self._generate_priority_ranking(raw_missing_list)

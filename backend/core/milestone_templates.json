@@ -1,71 +1,102 @@
 {
   "AI Engineer": [
-    {
-      "milestone_index": 1,
-      "title": "Foundations",
-      "skills": ["Python", "Machine Learning"]
-    },
-    {
-      "milestone_index": 2,
-      "title": "Core Deep Learning",
-      "skills": ["Deep Learning"]
-    },
-    {
-      "milestone_index": 3,
-      "title": "Deep Learning Frameworks",
-      "skills": ["PyTorch", "TensorFlow"]
-    },
-    {
-      "milestone_index": 4,
-      "title": "Natural Language Processing",
-      "skills": ["NLP"]
-    },
-    {
-      "milestone_index": 5,
-      "title": "Large Language Models",
-      "skills": ["LLMs"]
-    },
-    {
-      "milestone_index": 6,
-      "title": "Generative AI Concepts",
-      "skills": ["Generative AI"]
-    },
-    {
-      "milestone_index": 7,
-      "title": "Generative AI Application Tools",
-      "skills": ["LangChain", "LlamaIndex"]
-    }
+    {"milestone_index": 1, "title": "Foundations", "skills": ["Python", "Machine Learning"]},
+    {"milestone_index": 2, "title": "Core Deep Learning", "skills": ["Deep Learning"]},
+    {"milestone_index": 3, "title": "Deep Learning Frameworks", "skills": ["PyTorch", "TensorFlow"]},
+    {"milestone_index": 4, "title": "Natural Language Processing", "skills": ["NLP"]},
+    {"milestone_index": 5, "title": "Large Language Models", "skills": ["LLMs"]},
+    {"milestone_index": 6, "title": "Generative AI Concepts", "skills": ["Generative AI"]},
+    {"milestone_index": 7, "title": "Generative AI Application Tools", "skills": ["LangChain", "LlamaIndex"]},
+    {"milestone_index": 8, "title": "Production AI & Deployment", "skills": ["MLOps", "Docker", "FastAPI"]}
+  ],
+  "Machine Learning Engineer": [
+    {"milestone_index": 1, "title": "Python & Statistics Foundations", "skills": ["Python", "SQL"]},
+    {"milestone_index": 2, "title": "Core Machine Learning", "skills": ["Machine Learning", "Scikit-learn"]},
+    {"milestone_index": 3, "title": "Deep Learning", "skills": ["Deep Learning", "PyTorch"]},
+    {"milestone_index": 4, "title": "Data Engineering & Pipelines", "skills": ["Data Engineering", "Apache Spark"]},
+    {"milestone_index": 5, "title": "MLOps & Production", "skills": ["MLOps", "Docker", "Kubernetes"]},
+    {"milestone_index": 6, "title": "Cloud ML Platforms", "skills": ["AWS", "GCP"]}
+  ],
+  "Data Scientist": [
+    {"milestone_index": 1, "title": "Python & Statistics Foundations", "skills": ["Python", "SQL"]},
+    {"milestone_index": 2, "title": "Data Analysis & Visualization", "skills": ["Pandas", "NumPy", "Tableau"]},
+    {"milestone_index": 3, "title": "Machine Learning Core", "skills": ["Machine Learning", "Scikit-learn"]},
+    {"milestone_index": 4, "title": "Deep Learning & NLP", "skills": ["Deep Learning", "NLP"]},
+    {"milestone_index": 5, "title": "Big Data Engineering", "skills": ["Apache Spark", "Data Engineering"]},
+    {"milestone_index": 6, "title": "Advanced Analytics & Deployment", "skills": ["MLOps", "Cloud Computing"]}
+  ],
+  "Data Analyst": [
+    {"milestone_index": 1, "title": "SQL & Data Fundamentals", "skills": ["SQL", "Excel"]},
+    {"milestone_index": 2, "title": "Python for Analysis", "skills": ["Python"]},
+    {"milestone_index": 3, "title": "Data Visualization", "skills": ["Tableau", "Power BI"]},
+    {"milestone_index": 4, "title": "Statistical Analysis", "skills": ["Statistics", "R"]},
+    {"milestone_index": 5, "title": "Business Intelligence", "skills": ["dbt", "Data Engineering"]}
   ],
   "Full Stack Developer": [
-    {
-      "milestone_index": 1,
-      "title": "Web Foundations",
-      "skills": ["HTML5", "CSS3", "JavaScript"]
-    },
-    {
-      "milestone_index": 2,
-      "title": "Frontend Core Frameworks",
-      "skills": ["React", "TypeScript", "Redux"]
-    },
-    {
-      "milestone_index": 3,
-      "title": "Backend Foundations",
-      "skills": ["Node.js", "Express.js", "SQL"]
-    },
-    {
-      "milestone_index": 4,
-      "title": "NoSQL Databases & Cache",
-      "skills": ["MongoDB", "Redis"]
-    },
-    {
-      "milestone_index": 5,
-      "title": "Advanced Web Frameworks",
-      "skills": ["Next.js", "Tailwind CSS", "FastAPI"]
-    },
-    {
-      "milestone_index": 6,
-      "title": "DevOps & Containers",
-      "skills": ["Git", "Docker", "REST APIs"]
-    }
+    {"milestone_index": 1, "title": "Web Foundations", "skills": ["HTML5", "CSS3", "JavaScript"]},
+    {"milestone_index": 2, "title": "Frontend Core Frameworks", "skills": ["React", "TypeScript"]},
+    {"milestone_index": 3, "title": "State Management & Advanced UI", "skills": ["Redux", "Next.js"]},
+    {"milestone_index": 4, "title": "Backend Foundations", "skills": ["Node.js", "Express.js", "SQL"]},
+    {"milestone_index": 5, "title": "Databases & APIs", "skills": ["MongoDB", "REST APIs", "GraphQL"]},
+    {"milestone_index": 6, "title": "DevOps & Deployment", "skills": ["Git", "Docker", "CI/CD"]}
+  ],
+  "Software Engineer": [
+    {"milestone_index": 1, "title": "Programming Foundations", "skills": ["Python", "Java", "C++"]},
+    {"milestone_index": 2, "title": "Data Structures & Algorithms", "skills": ["Algorithms", "Data Structures"]},
+    {"milestone_index": 3, "title": "Databases & APIs", "skills": ["SQL", "REST APIs"]},
+    {"milestone_index": 4, "title": "Version Control & Collaboration", "skills": ["Git"]},
+    {"milestone_index": 5, "title": "Modern Frameworks", "skills": ["React", "FastAPI", "Node.js"]},
+    {"milestone_index": 6, "title": "DevOps & Cloud", "skills": ["Docker", "AWS", "CI/CD"]}
+  ],
+  "DevOps Engineer": [
+    {"milestone_index": 1, "title": "Linux & Scripting Foundations", "skills": ["Linux", "Bash", "Python"]},
+    {"milestone_index": 2, "title": "Version Control & CI/CD", "skills": ["Git", "CI/CD", "GitHub Actions"]},
+    {"milestone_index": 3, "title": "Containerization", "skills": ["Docker"]},
+    {"milestone_index": 4, "title": "Container Orchestration", "skills": ["Kubernetes", "Helm"]},
+    {"milestone_index": 5, "title": "Infrastructure as Code", "skills": ["Terraform", "Ansible"]},
+    {"milestone_index": 6, "title": "Cloud Platforms & Monitoring", "skills": ["AWS", "Azure", "Prometheus"]}
+  ],
+  "Cloud Engineer": [
+    {"milestone_index": 1, "title": "Cloud Computing Foundations", "skills": ["Cloud Computing", "Linux"]},
+    {"milestone_index": 2, "title": "AWS Core Services", "skills": ["AWS", "AWS S3", "AWS RDS"]},
+    {"milestone_index": 3, "title": "Networking & Security", "skills": ["Networking", "Network Security"]},
+    {"milestone_index": 4, "title": "Containers & Orchestration", "skills": ["Docker", "Kubernetes", "AWS EKS"]},
+    {"milestone_index": 5, "title": "Infrastructure as Code", "skills": ["Terraform", "Ansible"]},
+    {"milestone_index": 6, "title": "Multi-Cloud & Advanced Services", "skills": ["GCP", "Azure", "CI/CD"]}
+  ],
+  "Cybersecurity Engineer": [
+    {"milestone_index": 1, "title": "Networking & OS Foundations", "skills": ["Networking", "Linux"]},
+    {"milestone_index": 2, "title": "Security Fundamentals", "skills": ["Cryptography", "Network Security"]},
+    {"milestone_index": 3, "title": "Ethical Hacking", "skills": ["Penetration Testing", "OWASP"]},
+    {"milestone_index": 4, "title": "Security Operations", "skills": ["SIEM", "Incident Response"]},
+    {"milestone_index": 5, "title": "Cloud & Application Security", "skills": ["AWS", "Web Security", "Docker"]}
+  ],
+  "Blockchain Developer": [
+    {"milestone_index": 1, "title": "Blockchain Fundamentals", "skills": ["Blockchain Fundamentals", "Cryptography"]},
+    {"milestone_index": 2, "title": "Smart Contract Development", "skills": ["Solidity", "Ethereum"]},
+    {"milestone_index": 3, "title": "Blockchain Tools & Testing", "skills": ["Hardhat", "Web3.js"]},
+    {"milestone_index": 4, "title": "DeFi & Advanced Protocols", "skills": ["Smart Contracts", "DeFi Protocols"]},
+    {"milestone_index": 5, "title": "Web3 Frontend Integration", "skills": ["React", "Web3.js"]}
+  ],
+  "Mobile Developer": [
+    {"milestone_index": 1, "title": "Mobile Foundations", "skills": ["JavaScript", "React"]},
+    {"milestone_index": 2, "title": "Cross-Platform Development", "skills": ["React Native", "Flutter"]},
+    {"milestone_index": 3, "title": "Native iOS", "skills": ["Swift", "Xcode"]},
+    {"milestone_index": 4, "title": "Native Android", "skills": ["Kotlin", "Android Studio"]},
+    {"milestone_index": 5, "title": "Backend & APIs", "skills": ["REST APIs", "Firebase"]}
+  ],
+  "UI/UX Designer": [
+    {"milestone_index": 1, "title": "Design Foundations", "skills": ["UI/UX Design", "Figma"]},
+    {"milestone_index": 2, "title": "Research & Strategy", "skills": ["User Research", "Wireframing"]},
+    {"milestone_index": 3, "title": "Advanced Prototyping", "skills": ["Prototyping", "Adobe XD"]},
+    {"milestone_index": 4, "title": "Frontend Basics for Designers", "skills": ["HTML5", "CSS3"]},
+    {"milestone_index": 5, "title": "Design Systems & Accessibility", "skills": ["Design Systems", "Accessibility"]}
+  ],
+  "Product Manager": [
+    {"milestone_index": 1, "title": "Product Management Foundations", "skills": ["Product Management", "Agile"]},
+    {"milestone_index": 2, "title": "Tools & Execution", "skills": ["Jira", "Product Roadmapping"]},
+    {"milestone_index": 3, "title": "Data & Analytics", "skills": ["SQL", "Tableau"]},
+    {"milestone_index": 4, "title": "Strategy & Growth", "skills": ["OKRs", "A/B Testing"]},
+    {"milestone_index": 5, "title": "Technical Understanding", "skills": ["REST APIs", "System Design"]}
   ]
 }

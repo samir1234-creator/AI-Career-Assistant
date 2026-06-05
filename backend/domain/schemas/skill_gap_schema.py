@@ -24,6 +24,10 @@ class SkillGapRequest(BaseModel):
     career: str = Field(..., description="The target career role title")
     matched_skills: List[str] = Field(default_factory=list, description="List of matched skills")
     missing_skills: List[str] = Field(default_factory=list, description="List of missing skills")
+    projects: List[str] = Field(default_factory=list, description="List of projects")
+    certifications: List[str] = Field(default_factory=list, description="List of certifications")
+    education: List[str] = Field(default_factory=list, description="List of education")
+    ats_score: int = Field(70, description="ATS score")
 
 class MilestoneItem(BaseModel):
     index: int = Field(..., description="The sequence index of the milestone")

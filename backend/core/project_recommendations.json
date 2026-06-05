@@ -1,0 +1,77 @@
+{
+  "deep learning": [
+    {"title": "Neural Network from Scratch", "description": "Implement a 2-layer neural network using only NumPy without any ML frameworks. Train it to classify MNIST handwritten digits.", "difficulty": "Beginner", "tech": ["Python", "NumPy"], "estimated_hours": 8},
+    {"title": "Image Classification CNN", "description": "Build a Convolutional Neural Network to classify CIFAR-10 images into 10 categories using PyTorch or TensorFlow.", "difficulty": "Intermediate", "tech": ["PyTorch", "Python"], "estimated_hours": 15},
+    {"title": "Real-Time Object Detection System", "description": "Build a production-ready object detection system using YOLOv8 with a custom-trained model. Deploy with FastAPI and stream video results.", "difficulty": "Advanced", "tech": ["PyTorch", "FastAPI", "OpenCV"], "estimated_hours": 30}
+  ],
+  "pytorch": [
+    {"title": "PyTorch MNIST Digit Classifier", "description": "Build your first neural network with PyTorch to classify handwritten digits. Implement custom training loops and model evaluation.", "difficulty": "Beginner", "tech": ["PyTorch", "Python"], "estimated_hours": 6},
+    {"title": "Transfer Learning Image Classifier", "description": "Fine-tune a pre-trained ResNet-50 model on a custom image dataset (e.g., flower species or dog breeds) using PyTorch's transfer learning.", "difficulty": "Intermediate", "tech": ["PyTorch", "torchvision"], "estimated_hours": 12},
+    {"title": "Custom Transformer Architecture from Scratch", "description": "Implement the full Transformer architecture (Multi-Head Attention, Positional Encoding, FFN) from scratch and train it on a text classification task.", "difficulty": "Advanced", "tech": ["PyTorch", "Python"], "estimated_hours": 25}
+  ],
+  "nlp": [
+    {"title": "Sentiment Analysis Classifier", "description": "Build a text sentiment analyzer for product reviews using NLTK and Scikit-learn. Implement TF-IDF features and evaluate with precision/recall.", "difficulty": "Beginner", "tech": ["Python", "NLTK", "Scikit-learn"], "estimated_hours": 6},
+    {"title": "Named Entity Recognition (NER) System", "description": "Fine-tune BERT on a named entity recognition task using the spaCy and Hugging Face Transformers library.", "difficulty": "Intermediate", "tech": ["spaCy", "Transformers", "Python"], "estimated_hours": 16},
+    {"title": "Document Q&A Engine with FAISS", "description": "Build a full document retrieval + Q&A system using Hugging Face embeddings, FAISS vector search, and a generative model for answers.", "difficulty": "Advanced", "tech": ["Transformers", "FAISS", "Python"], "estimated_hours": 28}
+  ],
+  "llms": [
+    {"title": "ChatGPT-Style CLI Chatbot", "description": "Build a command-line chatbot using the OpenAI API with conversation memory, streaming responses, and system prompt engineering.", "difficulty": "Beginner", "tech": ["Python", "OpenAI API"], "estimated_hours": 5},
+    {"title": "Document Summarizer with LLM", "description": "Build a PDF/document summarizer using LangChain's map-reduce chain with chunk processing for long documents.", "difficulty": "Intermediate", "tech": ["LangChain", "Python", "OpenAI"], "estimated_hours": 14},
+    {"title": "Fine-Tuned Domain-Specific LLM with LoRA", "description": "Fine-tune a Mistral-7B or LLaMA-3 model on a domain-specific dataset using LoRA/QLoRA. Deploy via Hugging Face Inference Endpoints.", "difficulty": "Advanced", "tech": ["PyTorch", "PEFT", "Hugging Face"], "estimated_hours": 40}
+  ],
+  "generative ai": [
+    {"title": "AI Image Generator App", "description": "Build a web app that uses Stable Diffusion (via Replicate or AUTOMATIC1111 API) to generate images from text prompts.", "difficulty": "Beginner", "tech": ["Python", "Stable Diffusion API", "Gradio"], "estimated_hours": 7},
+    {"title": "AI Content Marketing Tool", "description": "Build a multi-step content generation pipeline that creates blog posts, social media captions, and meta descriptions from a keyword.", "difficulty": "Intermediate", "tech": ["LangChain", "OpenAI", "FastAPI"], "estimated_hours": 18},
+    {"title": "Multimodal AI Assistant (Text + Image)", "description": "Build a production multimodal assistant that processes text AND images using GPT-4V, with memory, tool calling, and a React frontend.", "difficulty": "Advanced", "tech": ["OpenAI GPT-4V", "LangChain", "React", "FastAPI"], "estimated_hours": 45}
+  ],
+  "langchain": [
+    {"title": "Simple Q&A Bot with LangChain", "description": "Build a Q&A bot using LangChain's LLMChain and PromptTemplate with a simple question-answering use case.", "difficulty": "Beginner", "tech": ["LangChain", "Python", "OpenAI"], "estimated_hours": 5},
+    {"title": "RAG Chatbot over PDF Documents", "description": "Build a chatbot that answers questions from uploaded PDFs using LangChain's document loaders, FAISS, and retrieval-augmented generation.", "difficulty": "Intermediate", "tech": ["LangChain", "FAISS", "OpenAI"], "estimated_hours": 16},
+    {"title": "LangChain Agent with Tool Calling & Memory", "description": "Build a fully-featured AI agent with web search, code execution, calculator, and conversation memory tools using LangChain AgentExecutor.", "difficulty": "Advanced", "tech": ["LangChain", "SerpAPI", "Python"], "estimated_hours": 35}
+  ],
+  "llamaindex": [
+    {"title": "Personal Notes Q&A with LlamaIndex", "description": "Index your personal notes (Markdown files) using LlamaIndex SimpleDirectoryReader and build a Q&A interface.", "difficulty": "Beginner", "tech": ["LlamaIndex", "Python"], "estimated_hours": 5},
+    {"title": "Multi-Document Comparison Engine", "description": "Use LlamaIndex to index multiple research papers and build a comparison engine that highlights similarities and differences across documents.", "difficulty": "Intermediate", "tech": ["LlamaIndex", "OpenAI", "Python"], "estimated_hours": 18},
+    {"title": "Agentic RAG System with LlamaIndex", "description": "Build an advanced multi-agent RAG system using LlamaIndex's ReActAgent, SubQuestionQueryEngine, and persistent vector storage with ChromaDB.", "difficulty": "Advanced", "tech": ["LlamaIndex", "ChromaDB", "FastAPI"], "estimated_hours": 40}
+  ],
+  "machine learning": [
+    {"title": "House Price Prediction Model", "description": "Build a regression model to predict house prices using the Boston or Ames Housing dataset with feature engineering and cross-validation.", "difficulty": "Beginner", "tech": ["Python", "Scikit-learn", "Pandas"], "estimated_hours": 8},
+    {"title": "Customer Churn Prediction System", "description": "Build an end-to-end ML pipeline for predicting customer churn with class imbalance handling, SHAP explanations, and a REST API endpoint.", "difficulty": "Intermediate", "tech": ["Python", "Scikit-learn", "FastAPI", "SHAP"], "estimated_hours": 20},
+    {"title": "Recommendation Engine at Scale", "description": "Build a collaborative filtering recommendation system using ALS (Alternating Least Squares) with hyperparameter tuning and evaluation metrics.", "difficulty": "Advanced", "tech": ["Python", "Apache Spark", "MLflow"], "estimated_hours": 35}
+  ],
+  "docker": [
+    {"title": "Dockerize a Python Flask App", "description": "Containerize a simple Flask REST API using Docker. Write a Dockerfile, build an image, and run it in a container.", "difficulty": "Beginner", "tech": ["Docker", "Python", "Flask"], "estimated_hours": 4},
+    {"title": "Multi-Service Docker Compose App", "description": "Build a multi-container application (React frontend + FastAPI backend + PostgreSQL) using Docker Compose with environment configuration.", "difficulty": "Intermediate", "tech": ["Docker Compose", "FastAPI", "PostgreSQL"], "estimated_hours": 12},
+    {"title": "Secure CI/CD Pipeline with Docker & GitHub Actions", "description": "Build a full CI/CD pipeline that builds, tests, scans for vulnerabilities, and pushes Docker images to AWS ECR, then deploys to ECS.", "difficulty": "Advanced", "tech": ["Docker", "GitHub Actions", "AWS ECR", "AWS ECS"], "estimated_hours": 28}
+  ],
+  "kubernetes": [
+    {"title": "Deploy App to Local Kubernetes (Minikube)", "description": "Deploy a containerized Python app to a local Kubernetes cluster using Minikube, writing Deployments and Services.", "difficulty": "Beginner", "tech": ["Kubernetes", "Minikube", "Docker"], "estimated_hours": 6},
+    {"title": "Kubernetes Microservices with Ingress & ConfigMaps", "description": "Deploy a 3-service microservices app (API + Worker + Database) with Kubernetes Ingress, ConfigMaps, Secrets, and HPA auto-scaling.", "difficulty": "Intermediate", "tech": ["Kubernetes", "Helm", "Docker"], "estimated_hours": 20},
+    {"title": "Production EKS Cluster with Terraform & Helm", "description": "Provision an AWS EKS cluster using Terraform, deploy apps using Helm charts, configure Prometheus + Grafana monitoring and alerting.", "difficulty": "Advanced", "tech": ["Kubernetes", "Terraform", "AWS EKS", "Helm", "Prometheus"], "estimated_hours": 40}
+  ],
+  "react": [
+    {"title": "Personal Portfolio Website", "description": "Build a personal portfolio website with React featuring animated sections, a project gallery, and a contact form.", "difficulty": "Beginner", "tech": ["React", "CSS"], "estimated_hours": 10},
+    {"title": "Real-Time Chat Application", "description": "Build a real-time chat app using React for the frontend and Firebase Realtime Database for messaging with auth and rooms.", "difficulty": "Intermediate", "tech": ["React", "Firebase", "Tailwind CSS"], "estimated_hours": 22},
+    {"title": "Full-Stack E-Commerce Platform", "description": "Build a full e-commerce platform with React, Redux Toolkit, Node.js API, MongoDB, Stripe payments, and JWT authentication.", "difficulty": "Advanced", "tech": ["React", "Redux", "Node.js", "MongoDB", "Stripe"], "estimated_hours": 60}
+  ],
+  "sql": [
+    {"title": "E-Commerce Database Design", "description": "Design and implement a normalized relational database schema for an e-commerce platform with CRUD operations and complex joins.", "difficulty": "Beginner", "tech": ["SQL", "PostgreSQL"], "estimated_hours": 6},
+    {"title": "Business Analytics Dashboard Queries", "description": "Write complex analytical SQL queries (window functions, CTEs, subqueries) to generate business KPI reports from a sample dataset.", "difficulty": "Intermediate", "tech": ["SQL", "PostgreSQL", "Tableau"], "estimated_hours": 15},
+    {"title": "Data Warehouse Architecture with dbt", "description": "Design and implement a star schema data warehouse using PostgreSQL + dbt with incremental models, tests, and documentation.", "difficulty": "Advanced", "tech": ["SQL", "dbt", "PostgreSQL", "Airflow"], "estimated_hours": 35}
+  ],
+  "penetration testing": [
+    {"title": "OWASP Juice Shop Walkthrough", "description": "Complete all beginner challenges on OWASP Juice Shop (SQLi, XSS, broken auth) and document your findings in a pentesting report.", "difficulty": "Beginner", "tech": ["Kali Linux", "OWASP Juice Shop", "Burp Suite"], "estimated_hours": 8},
+    {"title": "Internal Network Penetration Test Lab", "description": "Set up a vulnerable VM lab (Metasploitable, DVWA) and perform a full internal penetration test: reconnaissance, exploitation, post-exploitation.", "difficulty": "Intermediate", "tech": ["Metasploit", "Nmap", "Kali Linux"], "estimated_hours": 25},
+    {"title": "Red Team Engagement Report", "description": "Conduct a full red team engagement simulation: OSINT, social engineering simulation, Active Directory attacks, lateral movement, and full professional report.", "difficulty": "Advanced", "tech": ["Kali Linux", "BloodHound", "CrackMapExec", "PowerShell"], "estimated_hours": 60}
+  ],
+  "solidity": [
+    {"title": "Simple ERC-20 Token", "description": "Deploy a basic ERC-20 fungible token on the Ethereum Goerli testnet using OpenZeppelin contracts and Remix IDE.", "difficulty": "Beginner", "tech": ["Solidity", "OpenZeppelin", "Remix IDE"], "estimated_hours": 5},
+    {"title": "NFT Marketplace Smart Contract", "description": "Build an NFT marketplace with ERC-721 tokens, listing, buying, and auction functionality. Test using Hardhat and deploy to testnet.", "difficulty": "Intermediate", "tech": ["Solidity", "Hardhat", "OpenZeppelin", "ethers.js"], "estimated_hours": 28},
+    {"title": "DeFi Lending Protocol (Aave Clone)", "description": "Build a simplified DeFi lending protocol with collateralized borrowing, interest rate models, liquidations, and a React frontend.", "difficulty": "Advanced", "tech": ["Solidity", "Hardhat", "React", "Web3.js"], "estimated_hours": 65}
+  ],
+  "python": [
+    {"title": "Python CLI Task Manager", "description": "Build a command-line task manager with add/remove/list/complete features using Python, JSON file storage, and argparse.", "difficulty": "Beginner", "tech": ["Python"], "estimated_hours": 5},
+    {"title": "Web Scraper & Data Pipeline", "description": "Build an automated web scraper for product data using Beautiful Soup + Selenium, store results in PostgreSQL, and schedule with Celery.", "difficulty": "Intermediate", "tech": ["Python", "BeautifulSoup", "PostgreSQL", "Celery"], "estimated_hours": 18},
+    {"title": "FastAPI Microservices Backend", "description": "Build a production microservices backend with FastAPI, async SQLAlchemy, Redis caching, JWT auth, Docker, and full OpenAPI documentation.", "difficulty": "Advanced", "tech": ["FastAPI", "PostgreSQL", "Redis", "Docker"], "estimated_hours": 45}
+  ]
+}

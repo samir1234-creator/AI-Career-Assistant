@@ -28,8 +28,8 @@ def test_skill_gap_analysis_service_ai_engineer():
     assert response.career_readiness_level == "Developing"
     
     # Assert job readiness timeline
-    assert response.job_ready_time_weeks == "14-20 Weeks"
-    assert response.job_ready_time_months == "4-5 Months"
+    assert response.job_ready_time_weeks == "20 Weeks"
+    assert response.job_ready_time_months == "5 Months"
     
     # Assert priority ranking
     assert response.priority_ranking == ["Deep Learning", "NLP", "LLMs", "Generative AI", "LangChain"]
@@ -44,7 +44,7 @@ def test_skill_gap_analysis_service_ai_engineer():
     for item in response.critical_skills:
         if item.skill == "Deep Learning":
             assert item.impact_score == 95
-            assert item.estimated_learning_time == "6 weeks"
+            assert item.estimated_learning_time == "4 weeks"
             assert item.priority == "Critical"
             
     # Assert important skills
@@ -54,7 +54,7 @@ def test_skill_gap_analysis_service_ai_engineer():
     for item in response.important_skills:
         if item.skill == "NLP":
             assert item.impact_score == 75
-            assert item.estimated_learning_time == "2-4 weeks"
+            assert item.estimated_learning_time == "2 weeks"
             assert item.priority == "Important"
 
     # Assert optional skills
@@ -63,7 +63,7 @@ def test_skill_gap_analysis_service_ai_engineer():
     for item in response.optional_skills:
         if item.skill == "LangChain":
             assert item.impact_score == 40
-            assert item.estimated_learning_time == "1-2 weeks"
+            assert item.estimated_learning_time == "1 week"
             assert item.priority == "Optional"
 
     # Assert insights
@@ -83,7 +83,7 @@ def test_skill_gap_analysis_service_ai_engineer():
     dl_item = next(item for item in response.roadmap_compatibility if item.skill == "Deep Learning")
     assert dl_item.priority == "critical"
     assert dl_item.impact_score == 95
-    assert dl_item.learning_time_weeks == 6
+    assert dl_item.learning_time_weeks == 4
     assert "Python" in dl_item.dependencies
     assert "Machine Learning" in dl_item.dependencies
 
@@ -117,8 +117,8 @@ def test_skill_gap_analysis_endpoint():
     assert data["career_readiness"] == 72
     assert data["gap_severity"] == "Medium Gap"
     assert data["career_readiness_level"] == "Developing"
-    assert data["job_ready_time_weeks"] == "14-20 Weeks"
-    assert data["job_ready_time_months"] == "4-5 Months"
+    assert data["job_ready_time_weeks"] == "20 Weeks"
+    assert data["job_ready_time_months"] == "5 Months"
     assert data["priority_ranking"] == ["Deep Learning", "NLP", "LLMs", "Generative AI", "LangChain"]
     assert len(data["critical_skills"]) == 2
     assert len(data["important_skills"]) == 2

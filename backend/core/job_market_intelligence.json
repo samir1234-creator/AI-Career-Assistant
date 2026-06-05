@@ -1,0 +1,626 @@
+{
+  "AI Engineer": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹12L – ₹40L",
+      "entry": {
+        "salary_range": "₹8L – ₹15L",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "₹15L – ₹35L",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "₹35L – ₹70L+",
+        "experience": "7+ Years",
+        "demand_level": "Critical"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$120K – $280K",
+      "entry": {
+        "salary_range": "$90K – $140K",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "$140K – $220K",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "$220K – $400K+",
+        "experience": "7+ Years",
+        "demand_level": "Critical"
+      }
+    },
+    "demand_level": "Very High",
+    "hiring_trend": "Explosive Growth",
+    "trend_direction": "up",
+    "estimated_job_openings": 85000,
+    "yoy_growth": "+42%",
+    "top_employers": ["Google DeepMind", "OpenAI", "Microsoft AI", "Meta AI", "NVIDIA", "Amazon AI"],
+    "remote_friendly": true,
+    "certification_boost": ["Google Professional ML Engineer", "AWS ML Specialty", "DeepLearning.AI TensorFlow Developer"]
+  },
+  "Machine Learning Engineer": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹10L – ₹35L",
+      "entry": {
+        "salary_range": "₹7L – ₹13L",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "₹13L – ₹28L",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "₹28L – ₹55L+",
+        "experience": "7+ Years",
+        "demand_level": "Very High"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$110K – $260K",
+      "entry": {
+        "salary_range": "$90K – $130K",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "$130K – $200K",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "$200K – $330K+",
+        "experience": "7+ Years",
+        "demand_level": "Very High"
+      }
+    },
+    "demand_level": "Very High",
+    "hiring_trend": "Rapid Growth",
+    "trend_direction": "up",
+    "estimated_job_openings": 70000,
+    "yoy_growth": "+38%",
+    "top_employers": ["Google", "Apple", "Uber", "LinkedIn", "Airbnb", "NVIDIA"],
+    "remote_friendly": true,
+    "certification_boost": ["AWS ML Specialty", "Google Professional ML Engineer", "Databricks ML Professional"]
+  },
+  "Data Scientist": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹9L – ₹28L",
+      "entry": {
+        "salary_range": "₹6L – ₹11L",
+        "experience": "0–2 Years",
+        "demand_level": "High"
+      },
+      "mid": {
+        "salary_range": "₹11L – ₹22L",
+        "experience": "3–6 Years",
+        "demand_level": "High"
+      },
+      "senior": {
+        "salary_range": "₹22L – ₹45L+",
+        "experience": "7+ Years",
+        "demand_level": "High"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$95K – $200K",
+      "entry": {
+        "salary_range": "$80K – $115K",
+        "experience": "0–2 Years",
+        "demand_level": "High"
+      },
+      "mid": {
+        "salary_range": "$115K – $165K",
+        "experience": "3–6 Years",
+        "demand_level": "High"
+      },
+      "senior": {
+        "salary_range": "$165K – $260K+",
+        "experience": "7+ Years",
+        "demand_level": "High"
+      }
+    },
+    "demand_level": "High",
+    "hiring_trend": "Steady Growth",
+    "trend_direction": "up",
+    "estimated_job_openings": 55000,
+    "yoy_growth": "+22%",
+    "top_employers": ["McKinsey", "Netflix", "Spotify", "Amazon", "IBM", "Salesforce"],
+    "remote_friendly": true,
+    "certification_boost": ["IBM Data Science Professional Certificate", "Google Data Analytics Certificate", "Databricks Data Scientist Associate"]
+  },
+  "Data Analyst": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹5L – ₹15L",
+      "entry": {
+        "salary_range": "₹4L – ₹7L",
+        "experience": "0–2 Years",
+        "demand_level": "Medium"
+      },
+      "mid": {
+        "salary_range": "₹7L – ₹13L",
+        "experience": "3–6 Years",
+        "demand_level": "High"
+      },
+      "senior": {
+        "salary_range": "₹13L – ₹24L+",
+        "experience": "7+ Years",
+        "demand_level": "High"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$55K – $110K",
+      "entry": {
+        "salary_range": "$45K – $65K",
+        "experience": "0–2 Years",
+        "demand_level": "Medium"
+      },
+      "mid": {
+        "salary_range": "$65K – $95K",
+        "experience": "3–6 Years",
+        "demand_level": "High"
+      },
+      "senior": {
+        "salary_range": "$95K – $145K+",
+        "experience": "7+ Years",
+        "demand_level": "High"
+      }
+    },
+    "demand_level": "High",
+    "hiring_trend": "Consistent Demand",
+    "trend_direction": "stable",
+    "estimated_job_openings": 120000,
+    "yoy_growth": "+18%",
+    "top_employers": ["Deloitte", "EY", "PwC", "Infosys", "TCS", "Accenture"],
+    "remote_friendly": true,
+    "certification_boost": ["Google Data Analytics Certificate", "Microsoft Power BI Data Analyst Associate", "Tableau Desktop Specialist"]
+  },
+  "Full Stack Developer": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹7L – ₹25L",
+      "entry": {
+        "salary_range": "₹5L – ₹9L",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "₹9L – ₹18L",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "₹18L – ₹36L+",
+        "experience": "7+ Years",
+        "demand_level": "Very High"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$85K – $175K",
+      "entry": {
+        "salary_range": "$70K – $100K",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "$100K – $150K",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "$150K – $230K+",
+        "experience": "7+ Years",
+        "demand_level": "Very High"
+      }
+    },
+    "demand_level": "Very High",
+    "hiring_trend": "Steady Growth",
+    "trend_direction": "up",
+    "estimated_job_openings": 200000,
+    "yoy_growth": "+20%",
+    "top_employers": ["Startups", "Shopify", "Airbnb", "Stripe", "HubSpot", "Atlassian"],
+    "remote_friendly": true,
+    "certification_boost": ["Meta Full Stack Engineer Certificate", "AWS Developer Associate", "MongoDB Developer Path"]
+  },
+  "Software Engineer": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹8L – ₹30L",
+      "entry": {
+        "salary_range": "₹5L – ₹10L",
+        "experience": "0–2 Years",
+        "demand_level": "High"
+      },
+      "mid": {
+        "salary_range": "₹10L – ₹22L",
+        "experience": "3–6 Years",
+        "demand_level": "High"
+      },
+      "senior": {
+        "salary_range": "₹22L – ₹45L+",
+        "experience": "7+ Years",
+        "demand_level": "High"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$90K – $200K",
+      "entry": {
+        "salary_range": "$75K – $110K",
+        "experience": "0–2 Years",
+        "demand_level": "High"
+      },
+      "mid": {
+        "salary_range": "$110K – $165K",
+        "experience": "3–6 Years",
+        "demand_level": "High"
+      },
+      "senior": {
+        "salary_range": "$165K – $270K+",
+        "experience": "7+ Years",
+        "demand_level": "High"
+      }
+    },
+    "demand_level": "Very High",
+    "hiring_trend": "Consistent Demand",
+    "trend_direction": "stable",
+    "estimated_job_openings": 400000,
+    "yoy_growth": "+15%",
+    "top_employers": ["Google", "Microsoft", "Apple", "Amazon", "Meta", "TCS", "Infosys"],
+    "remote_friendly": true,
+    "certification_boost": ["AWS Developer Associate", "Oracle Java SE Developer", "Google Associate Android Developer"]
+  },
+  "DevOps Engineer": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹9L – ₹32L",
+      "entry": {
+        "salary_range": "₹6L – ₹11L",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "₹11L – ₹22L",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "₹22L – ₹45L+",
+        "experience": "7+ Years",
+        "demand_level": "Critical"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$100K – $220K",
+      "entry": {
+        "salary_range": "$85K – $120K",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "$120K – $175K",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "$175K – $290K+",
+        "experience": "7+ Years",
+        "demand_level": "Critical"
+      }
+    },
+    "demand_level": "Very High",
+    "hiring_trend": "Explosive Growth",
+    "trend_direction": "up",
+    "estimated_job_openings": 90000,
+    "yoy_growth": "+30%",
+    "top_employers": ["Netflix", "LinkedIn", "Uber", "Cloudflare", "HashiCorp", "GitLab"],
+    "remote_friendly": true,
+    "certification_boost": ["AWS DevOps Engineer Professional", "CKA (Certified Kubernetes Administrator)", "HashiCorp Terraform Associate"]
+  },
+  "Cloud Engineer": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹10L – ₹35L",
+      "entry": {
+        "salary_range": "₹6L – ₹12L",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "₹12L – ₹24L",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "₹24L – ₹50L+",
+        "experience": "7+ Years",
+        "demand_level": "Very High"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$110K – $240K",
+      "entry": {
+        "salary_range": "$90K – $130K",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "$130K – $185K",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "$185K – $310K+",
+        "experience": "7+ Years",
+        "demand_level": "Very High"
+      }
+    },
+    "demand_level": "Very High",
+    "hiring_trend": "Explosive Growth",
+    "trend_direction": "up",
+    "estimated_job_openings": 75000,
+    "yoy_growth": "+35%",
+    "top_employers": ["AWS", "Microsoft Azure", "Google Cloud", "Accenture", "IBM", "Wipro"],
+    "remote_friendly": true,
+    "certification_boost": ["AWS Solutions Architect Associate", "Azure Administrator Associate", "Google Professional Cloud Architect"]
+  },
+  "Cybersecurity Engineer": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹8L – ₹30L",
+      "entry": {
+        "salary_range": "₹5L – ₹10L",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "₹10L – ₹22L",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "₹22L – ₹45L+",
+        "experience": "7+ Years",
+        "demand_level": "Critical"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$95K – $210K",
+      "entry": {
+        "salary_range": "$80K – $115K",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "$115K – $170K",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "$170K – $280K+",
+        "experience": "7+ Years",
+        "demand_level": "Critical"
+      }
+    },
+    "demand_level": "Critical Shortage",
+    "hiring_trend": "Explosive Growth",
+    "trend_direction": "up",
+    "estimated_job_openings": 65000,
+    "yoy_growth": "+33%",
+    "top_employers": ["Palo Alto Networks", "CrowdStrike", "IBM Security", "Cisco", "FireEye", "KPMG"],
+    "remote_friendly": true,
+    "certification_boost": ["CompTIA Security+", "CEH (Certified Ethical Hacker)", "CISSP", "OSCP"]
+  },
+  "Blockchain Developer": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹12L – ₹45L",
+      "entry": {
+        "salary_range": "₹8L – ₹15L",
+        "experience": "0–2 Years",
+        "demand_level": "High"
+      },
+      "mid": {
+        "salary_range": "₹15L – ₹28L",
+        "experience": "3–6 Years",
+        "demand_level": "High"
+      },
+      "senior": {
+        "salary_range": "₹28L – ₹55L+",
+        "experience": "7+ Years",
+        "demand_level": "High"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$130K – $300K",
+      "entry": {
+        "salary_range": "$100K – $150K",
+        "experience": "0–2 Years",
+        "demand_level": "High"
+      },
+      "mid": {
+        "salary_range": "$150K – $230K",
+        "experience": "3–6 Years",
+        "demand_level": "High"
+      },
+      "senior": {
+        "salary_range": "$230K – $360K+",
+        "experience": "7+ Years",
+        "demand_level": "High"
+      }
+    },
+    "demand_level": "High",
+    "hiring_trend": "Cyclical Growth",
+    "trend_direction": "up",
+    "estimated_job_openings": 18000,
+    "yoy_growth": "+25%",
+    "top_employers": ["Coinbase", "Binance", "OpenSea", "Consensys", "Polygon", "a16z Crypto"],
+    "remote_friendly": true,
+    "certification_boost": ["Ethereum Developer Certification (ETC)", "Certified Blockchain Developer (CBDE)", "Alchemy University Certificate"]
+  },
+  "Mobile Developer": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹7L – ₹25L",
+      "entry": {
+        "salary_range": "₹5L – ₹9L",
+        "experience": "0–2 Years",
+        "demand_level": "High"
+      },
+      "mid": {
+        "salary_range": "₹9L – ₹18L",
+        "experience": "3–6 Years",
+        "demand_level": "High"
+      },
+      "senior": {
+        "salary_range": "₹18L – ₹36L+",
+        "experience": "7+ Years",
+        "demand_level": "High"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$80K – $175K",
+      "entry": {
+        "salary_range": "$65K – $95K",
+        "experience": "0–2 Years",
+        "demand_level": "High"
+      },
+      "mid": {
+        "salary_range": "$95K – $145K",
+        "experience": "3–6 Years",
+        "demand_level": "High"
+      },
+      "senior": {
+        "salary_range": "$145K – $230K+",
+        "experience": "7+ Years",
+        "demand_level": "High"
+      }
+    },
+    "demand_level": "High",
+    "hiring_trend": "Steady Growth",
+    "trend_direction": "stable",
+    "estimated_job_openings": 80000,
+    "yoy_growth": "+16%",
+    "top_employers": ["Apple", "Google", "Lyft", "Airbnb", "TikTok", "Swiggy", "Zomato"],
+    "remote_friendly": true,
+    "certification_boost": ["Google Associate Android Developer", "Apple Certified iOS Developer", "Meta React Native Developer"]
+  },
+  "UI/UX Designer": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹6L – ₹20L",
+      "entry": {
+        "salary_range": "₹4L – ₹8L",
+        "experience": "0–2 Years",
+        "demand_level": "High"
+      },
+      "mid": {
+        "salary_range": "₹8L – ₹14L",
+        "experience": "3–6 Years",
+        "demand_level": "High"
+      },
+      "senior": {
+        "salary_range": "₹14L – ₹30L+",
+        "experience": "7+ Years",
+        "demand_level": "High"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$70K – $150K",
+      "entry": {
+        "salary_range": "$55K – $80K",
+        "experience": "0–2 Years",
+        "demand_level": "High"
+      },
+      "mid": {
+        "salary_range": "$80K – $125K",
+        "experience": "3–6 Years",
+        "demand_level": "High"
+      },
+      "senior": {
+        "salary_range": "$125K – $185K+",
+        "experience": "7+ Years",
+        "demand_level": "High"
+      }
+    },
+    "demand_level": "High",
+    "hiring_trend": "Consistent Demand",
+    "trend_direction": "stable",
+    "estimated_job_openings": 95000,
+    "yoy_growth": "+14%",
+    "top_employers": ["Apple", "Google", "Airbnb", "Spotify", "Figma", "Adobe"],
+    "remote_friendly": true,
+    "certification_boost": ["Google UX Design Professional Certificate", "Interaction Design Foundation Certification", "Adobe XD Certified Professional"]
+  },
+  "Product Manager": {
+    "india_salary": {
+      "currency": "INR",
+      "formatted": "₹15L – ₹60L",
+      "entry": {
+        "salary_range": "₹10L – ₹18L",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "₹18L – ₹35L",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "₹35L – ₹70L+",
+        "experience": "7+ Years",
+        "demand_level": "Very High"
+      }
+    },
+    "global_salary": {
+      "currency": "USD",
+      "formatted": "$120K – $280K",
+      "entry": {
+        "salary_range": "$95K – $135K",
+        "experience": "0–2 Years",
+        "demand_level": "Very High"
+      },
+      "mid": {
+        "salary_range": "$135K – $205K",
+        "experience": "3–6 Years",
+        "demand_level": "Very High"
+      },
+      "senior": {
+        "salary_range": "$205K – $330K+",
+        "experience": "7+ Years",
+        "demand_level": "Very High"
+      }
+    },
+    "demand_level": "Very High",
+    "hiring_trend": "Rapid Growth",
+    "trend_direction": "up",
+    "estimated_job_openings": 55000,
+    "yoy_growth": "+19%",
+    "top_employers": ["Google", "Meta", "Amazon", "Microsoft", "Flipkart", "Razorpay"],
+    "remote_friendly": true,
+    "certification_boost": ["Product Management Certificate (Reforge)", "PMI PMBOK Certification", "Google Product Management Certificate"]
+  }
+}

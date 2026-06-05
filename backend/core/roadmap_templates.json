@@ -1,0 +1,195 @@
+{
+  "deep learning": {
+    "default_weeks": 6,
+    "milestone_index": 2,
+    "weekly_breakdown": [
+      {
+        "week": 1,
+        "title": "Neural Networks Foundations",
+        "topics": ["Perceptrons", "Activation Functions (ReLU, Sigmoid)", "Feedforward Architectures"]
+      },
+      {
+        "week": 2,
+        "title": "Gradient Descent & Optimization",
+        "topics": ["Backpropagation Math", "Loss Functions", "Optimizers (Adam, SGD)"]
+      },
+      {
+        "week": 3,
+        "title": "Deep Neural Networks Tuning",
+        "topics": ["Hyperparameter Optimization", "Regularization (Dropout, L2)", "Batch Normalization"]
+      },
+      {
+        "week": 4,
+        "title": "Convolutional Neural Networks (CNN)",
+        "topics": ["Convolutions & Kernels", "Pooling Layers", "AlexNet/ResNet Architectures"]
+      },
+      {
+        "week": 5,
+        "title": "Recurrent Neural Networks (RNN)",
+        "topics": ["Sequence Modeling", "LSTM & GRU cells", "Vanishing Gradients in RNNs"]
+      },
+      {
+        "week": 6,
+        "title": "Autoencoders & Generative Networks",
+        "topics": ["Latent Spaces", "Variational Autoencoders (VAEs)", "Introduction to GANs"]
+      }
+    ]
+  },
+  "pytorch": {
+    "default_weeks": 3,
+    "milestone_index": 3,
+    "weekly_breakdown": [
+      {
+        "week": 1,
+        "title": "PyTorch Tensors & Autograd",
+        "topics": ["Tensor Operations", "CPU vs GPU allocation", "Automatic Differentiation"]
+      },
+      {
+        "week": 2,
+        "title": "Custom Modules & Data Pipelines",
+        "topics": ["nn.Module base class", "Dataset & DataLoader custom hooks", "Transforms"]
+      },
+      {
+        "week": 3,
+        "title": "Training Loops & Model Saving",
+        "topics": ["Zeroing gradients", "Loss calculations & optimizer steps", "State dicts export"]
+      }
+    ]
+  },
+  "tensorflow": {
+    "default_weeks": 4,
+    "milestone_index": 3,
+    "weekly_breakdown": [
+      {
+        "week": 1,
+        "title": "TensorFlow Basics",
+        "topics": ["Static Graphs vs Eager Execution", "Tensor Operations", "Variable declarations"]
+      },
+      {
+        "week": 2,
+        "title": "Keras API Development",
+        "topics": ["Sequential vs Functional API", "Custom Layers", "Model subclassing"]
+      },
+      {
+        "week": 3,
+        "title": "tf.data Input Pipelines",
+        "topics": ["Batching & Prefetching", "Parallel data load", "Data Augmentation layers"]
+      },
+      {
+        "week": 4,
+        "title": "TensorBoard & Model Export",
+        "topics": ["Metrics tracking logs", "SavedModel format export", "TF Lite conversions"]
+      }
+    ]
+  },
+  "nlp": {
+    "default_weeks": 3,
+    "milestone_index": 4,
+    "weekly_breakdown": [
+      {
+        "week": 1,
+        "title": "Text Preprocessing & Vectorization",
+        "topics": ["Tokenization & Stopwords", "Bag-of-Words vs TF-IDF", "Regex cleaning"]
+      },
+      {
+        "week": 2,
+        "title": "Word Embeddings",
+        "topics": ["Word2Vec & GloVe", "Cosine Similarity lookup", "Sequence-to-Sequence models"]
+      },
+      {
+        "week": 3,
+        "title": "Transformer Architecture",
+        "topics": ["Self-Attention mechanism", "Query, Key, Value vectors", "Multi-Head Attention layers"]
+      }
+    ]
+  },
+  "llms": {
+    "default_weeks": 5,
+    "milestone_index": 5,
+    "weekly_breakdown": [
+      {
+        "week": 1,
+        "title": "Large Language Model Architecture",
+        "topics": ["Decoder-only transformers", "GPT/Llama specifications", "KV Caching"]
+      },
+      {
+        "week": 2,
+        "title": "Prompt Engineering Advanced Techniques",
+        "topics": ["Few-shot formatting", "Chain-of-Thought prompting", "System prompt optimization"]
+      },
+      {
+        "week": 3,
+        "title": "Supervised Fine-Tuning (SFT)",
+        "topics": ["Instruction Datasets", "LoRA / QLoRA adapters", "PEFT libraries"]
+      },
+      {
+        "week": 4,
+        "title": "Alignment & Optimization",
+        "topics": ["RLHF fundamentals", "Direct Preference Optimization (DPO)", "Quantization (GPTQ/GGUF)"]
+      },
+      {
+        "week": 5,
+        "title": "Evaluation & Benchmarks",
+        "topics": ["MMLU, GSM8K benchmarks", "MT-Bench LLM-as-a-judge", "Inference speed optimization"]
+      }
+    ]
+  },
+  "generative ai": {
+    "default_weeks": 4,
+    "milestone_index": 6,
+    "weekly_breakdown": [
+      {
+        "week": 1,
+        "title": "Generative Modeling Foundations",
+        "topics": ["Probability distributions", "Generative vs Discriminative models", "VAEs and GANs"]
+      },
+      {
+        "week": 2,
+        "title": "Diffusion Models & Stable Diffusion",
+        "topics": ["Forward & Reverse denoising", "U-Net architecture", "CLIP text encoder guidance"]
+      },
+      {
+        "week": 3,
+        "title": "Multi-Modal AI architectures",
+        "topics": ["Vision-Language Models (VLM)", "Contrastive Learning", "Image Captioning systems"]
+      },
+      {
+        "week": 4,
+        "title": "Ethics & Safety in Generative AI",
+        "topics": ["Deepfakes detection", "Bias evaluation", "Watermarking synthetic data"]
+      }
+    ]
+  },
+  "langchain": {
+    "default_weeks": 2,
+    "milestone_index": 7,
+    "weekly_breakdown": [
+      {
+        "week": 1,
+        "title": "LangChain Core Components",
+        "topics": ["ChatModels & PromptTemplates", "Output Parsers", "Chains (LCEL)"]
+      },
+      {
+        "week": 2,
+        "title": "LangChain Agents & Memory",
+        "topics": ["ReAct Agent loops", "Tool definition decorator", "ConversationSummaryMemory"]
+      }
+    ]
+  },
+  "llamaindex": {
+    "default_weeks": 2,
+    "milestone_index": 7,
+    "weekly_breakdown": [
+      {
+        "week": 1,
+        "title": "LlamaIndex Document Ingestion",
+        "topics": ["SimpleDirectoryReader loader", "TextSplitters & Nodes", "VectorStoreIndex creation"]
+      },
+      {
+        "week": 2,
+        "title": "Retrieval & Query Engines",
+        "topics": ["Retriever query configurations", "Response synthesizers", "Hybrid search filtering"]
+      }
+    ]
+  }
+}
