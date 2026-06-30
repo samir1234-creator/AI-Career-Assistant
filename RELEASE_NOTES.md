@@ -1,4 +1,4 @@
-# Release Notes 🚀 ILMORA v1.0.0
+🚀 ILMORA v1.0.0
 
 ## Highlights
 
