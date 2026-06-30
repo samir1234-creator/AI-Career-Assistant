@@ -6,12 +6,12 @@ if (typeof window !== 'undefined') {
     apiUrl = 'http://localhost:8000/api/v1';
   } else {
     if (!apiUrl || apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1')) {
-      apiUrl = 'https://ilmora-backend-hzsb.onrender.com/api/v1';
+      apiUrl = '/api/v1';
     }
   }
 } else {
   if (!apiUrl) {
-    apiUrl = 'https://ilmora-backend-hzsb.onrender.com/api/v1';
+    apiUrl = '/api/v1';
   }
 }
 

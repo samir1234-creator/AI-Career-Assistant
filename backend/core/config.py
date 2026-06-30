@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     
     # CORS Origins
     BACKEND_CORS_ORIGINS: list[str] = [
+        "https://ilmora-ai.vercel.app",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
