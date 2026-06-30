@@ -1,3 +1,4 @@
+
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
@@ -5,6 +6,7 @@ class ExtractionRequest(BaseModel):
     text_content: str
 
 class ResumeExtractionData(BaseModel):
+    resume_id: Optional[str] = None
     name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None

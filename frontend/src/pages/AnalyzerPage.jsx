@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ResumeUpload } from '../components/ResumeUpload/ResumeUpload';
 import { formatFileSize } from '../utils/formatters';
 import { extractResumeInfo, classifySkills, getATSScore, getRecommendations, getSkillGapAnalysis, generateRoadmap } from '../services/api';
 import { RoadmapDashboard } from './RoadmapDashboard';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const CATEGORY_DISPLAY_NAMES = {
   'Programming Language': 'Programming Languages',
@@ -241,7 +242,11 @@ const isDevModeEnabled = () => {
   return false;
 };
 
-export const AnalyzerPage = () => {
+const AnalyzerPage = ({ initialTab }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const restoredAnalysis = location.state?.restoredAnalysis;
+
   const [parsedData, setParsedData] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
   const [enrichedSkills, setEnrichedSkills] = useState([]);
@@ -249,7 +254,56 @@ export const AnalyzerPage = () => {
   const [recommendationsData, setRecommendationsData] = useState(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionError, setExtractionError] = useState(null);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState(initialTab || 'profile');
+
+  // Restore analysis details from history if passed
+  useEffect(() => {
+    if (restoredAnalysis) {
+      if (restoredAnalysis.resume) {
+        const filename = restoredAnalysis.resume.resume_file_url === 'local_text_only' 
+          ? 'Uploaded Resume' 
+          : (restoredAnalysis.resume.resume_file_url?.split('/').pop() || 'Resume');
+          
+        setParsedData({
+          filename: filename,
+          text_content: restoredAnalysis.resume.resume_text,
+          file_size_bytes: 0
+        });
+        
+        if (restoredAnalysis.resume.parsed_data) {
+          setExtractedData(restoredAnalysis.resume.parsed_data);
+          
+          const cleanedSkills = getParsedSkills(restoredAnalysis.resume.parsed_data.skills);
+          if (cleanedSkills.length > 0) {
+            classifySkills(cleanedSkills).then(classificationResult => {
+              setEnrichedSkills(classificationResult.skills || []);
+            }).catch(err => {
+              console.error("Failed to classify restored skills:", err);
+            });
+          }
+        }
+      }
+      if (restoredAnalysis.ats) {
+        setAtsData(restoredAnalysis.ats.report_data);
+      }
+      if (restoredAnalysis.recommendations) {
+        setRecommendationsData(restoredAnalysis.recommendations.recommendations);
+      }
+      setActiveTab(initialTab || 'profile');
+    } else {
+      setParsedData(null);
+      setExtractedData(null);
+      setEnrichedSkills([]);
+      setAtsData(null);
+      setRecommendationsData(null);
+    }
+  }, [restoredAnalysis, initialTab]);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   const [expandedGaps, setExpandedGaps] = useState({});
   const [skillGaps, setSkillGaps] = useState({});
@@ -356,7 +410,7 @@ export const AnalyzerPage = () => {
         ats_score: atsData?.ats_score || 70
       });
 
-      setActiveRoadmap(res);
+      navigate('/roadmap', { state: { roadmapData: res } });
     } catch (err) {
       console.error("Roadmap generation failed:", err);
       setRoadmapError(prev => ({ ...prev, [roleName]: err.message || "Failed to generate roadmap" }));
@@ -2165,3 +2219,5 @@ export const AnalyzerPage = () => {
     </div>
   );
 };
+
+export default AnalyzerPage;

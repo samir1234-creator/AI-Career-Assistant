@@ -42,6 +42,7 @@ class RoadmapRequest(BaseModel):
     certifications: List[str] = Field(default_factory=list, description="List of certifications")
     education: List[str] = Field(default_factory=list, description="List of education")
     ats_score: int = Field(70, description="ATS score")
+    resume_id: Optional[str] = Field(None, description="Optional associated resume UUID")
 
 class MilestoneProgressTracker(BaseModel):
     index: int = Field(..., description="Sequence milestone index")
@@ -93,6 +94,8 @@ class RoadmapResponse(BaseModel):
     difficulty: str = Field(..., description="Roadmap difficulty classification: Beginner, Intermediate, Advanced")
     total_weeks: int = Field(..., description="Total weeks of required learning")
     total_months: int = Field(..., description="Total months of required learning")
+    matched_skills: List[str] = Field(default_factory=list, description="Skills the user already possesses")
+    missing_skills: List[str] = Field(default_factory=list, description="Skills the user needs to acquire")
     monthly_roadmap: List[RoadmapMonthlyPlan] = Field(default_factory=list, description="List of monthly schedules")
     milestones: List[MilestoneProgressTracker] = Field(default_factory=list, description="Topological milestones roadmap")
     progress: RoadmapProgressInfo = Field(..., description="Aggregated learning progress metrics")

@@ -1,6 +1,7 @@
 import os
 import tempfile
-from fastapi import APIRouter, UploadFile, File, Request
+from typing import Optional
+from fastapi import APIRouter, UploadFile, File, Request, Header
 from domain.schemas.resume import ResumeParseData
 from domain.schemas.extraction import ExtractionRequest, ResumeExtractionData
 from services.resume_service import ResumeService
@@ -9,6 +10,8 @@ from core.response import BaseResponse
 from core.exceptions import FileValidationException, AppException
 from utils.file_validators import validate_pdf_magic_bytes, validate_file_size
 from core.config import settings
+from core.firebase_client import verify_firebase_token
+from core.database import save_current_resume, ensure_user_exists
 
 router = APIRouter()
 
@@ -53,11 +56,37 @@ async def upload_resume(request: Request, file: UploadFile = File(...)):
     "/extract",
     response_model=BaseResponse[ResumeExtractionData],
     summary="Extract structured information from resume text",
-    description="Accepts raw resume text, parses sections and fields (name, email, phone, linkedin, skills, education, projects, certifications), and returns structured JSON details."
+    description="Accepts raw resume text, parses sections and fields (name, email, phone, linkedin, skills, education, projects, certifications), and returns structured JSON details. Also saves it to resume history if user is authenticated."
 )
-async def extract_resume_info(payload: ExtractionRequest):
+async def extract_resume_info(payload: ExtractionRequest, authorization: Optional[str] = Header(None)):
     try:
         extracted_data = ExtractionService.extract_information(payload.text_content)
+        
+        # If user is authenticated, save the resume history
+        if authorization and authorization.startswith("Bearer "):
+            token = authorization.split(" ")[1]
+            user_payload = verify_firebase_token(token)
+            if user_payload and "sub" in user_payload:
+                # ── CRITICAL FIX: guarantee user row exists before FK INSERT ──
+                resolved_user_id = ensure_user_exists(
+                    firebase_uid=user_payload["firebase_uid"],
+                    email=user_payload["email"],
+                    name=user_payload["name"],
+                    picture=user_payload["picture"],
+                    db_uuid=user_payload["sub"]
+                )
+
+                # Save to DB
+                data_dict = extracted_data.model_dump() if hasattr(extracted_data, "model_dump") else dict(extracted_data)
+                resume_id = save_current_resume(
+                    user_id=resolved_user_id,
+                    resume_file_url="local_text_only",
+                    resume_text=payload.text_content,
+                    parsed_data=data_dict
+                )
+                # Set resume_id in output schema
+                extracted_data.resume_id = resume_id
+
         return BaseResponse(
             success=True,
             data=extracted_data,

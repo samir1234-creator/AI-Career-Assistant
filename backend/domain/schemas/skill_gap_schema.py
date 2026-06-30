@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 class RoadmapSkillItem(BaseModel):
     skill: str = Field(..., description="The name of the skill")
@@ -28,6 +28,7 @@ class SkillGapRequest(BaseModel):
     certifications: List[str] = Field(default_factory=list, description="List of certifications")
     education: List[str] = Field(default_factory=list, description="List of education")
     ats_score: int = Field(70, description="ATS score")
+    resume_id: Optional[str] = Field(None, description="Optional associated resume UUID")
 
 class MilestoneItem(BaseModel):
     index: int = Field(..., description="The sequence index of the milestone")

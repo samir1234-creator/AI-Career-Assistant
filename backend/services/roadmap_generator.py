@@ -549,6 +549,8 @@ class RoadmapGenerator:
             difficulty=difficulty,
             total_weeks=total_timeline_weeks,
             total_months=portfolio_month_num,
+            matched_skills=matched_skills,
+            missing_skills=missing_skills,
             monthly_roadmap=monthly_plans,
             milestones=milestones,
             progress=progress_info,

@@ -1,4 +1,4 @@
-venv/
+venv*/
 node_modules/
 .env
 uploads/
@@ -6,3 +6,4 @@ __pycache__/
 dist/
 build/
 .vscode/
+.claude/

@@ -11,6 +11,7 @@ class ATSScoringRequest(BaseModel):
     education: List[str] = Field(default_factory=list, description="List of education records")
     certifications: List[str] = Field(default_factory=list, description="List of certifications")
     achievements: List[str] = Field(default_factory=list, description="List of achievements")
+    resume_id: Optional[str] = Field(None, description="Optional associated resume UUID")
 
 class ScoreBreakdown(BaseModel):
     skills: int = Field(..., description="Technical skills section score (out of 30)")

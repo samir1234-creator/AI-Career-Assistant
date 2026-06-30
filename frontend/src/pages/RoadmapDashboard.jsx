@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { shareRoadmap, exportRoadmapPDF, getSharedRoadmap } from '../services/api';
+import { useState, useEffect, useCallback } from 'react';
+import { shareRoadmap, exportRoadmapPDF, getActiveRoadmap, updateTaskStatus } from '../services/api';
+import { useLocation } from 'react-router-dom';
 
 // ─── Badge definitions ───────────────────────────────────────────────────────
 const BADGE_CATALOG = [
@@ -14,19 +15,11 @@ const BADGE_CATALOG = [
 ];
 
 // ─── Utility helpers ──────────────────────────────────────────────────────────
-const STORAGE_KEY = (career) => `rdp_progress_v2_${career?.toLowerCase().replace(/\s+/g, '_')}`;
 const BADGE_TIMESTAMPS_KEY = (career) => `rdp_badge_timestamps_v2_${career?.toLowerCase().replace(/\s+/g, '_')}`;
 
-const loadProgress = (career) => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY(career));
-    return raw ? JSON.parse(raw) : {};
-  } catch { return {}; }
-};
 
-const saveProgress = (career, data) => {
-  try { localStorage.setItem(STORAGE_KEY(career), JSON.stringify(data)); } catch {}
-};
+
+
 
 const STATUS = { NOT_STARTED: 'not_started', IN_PROGRESS: 'in_progress', COMPLETED: 'completed' };
 
@@ -46,28 +39,6 @@ const getDemandColor = (d) =>
 
 const formatNumber = (n) => n >= 1000 ? `${(n / 1000).toFixed(0)}K+` : String(n);
 
-// ─── Progress Ring (pure CSS conic-gradient) ──────────────────────────────────
-const ProgressRing = ({ pct, size = 80, color = '#6366f1', label, sublabel, emoji }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
-    <div style={{
-      width: size, height: size, borderRadius: '50%',
-      background: `conic-gradient(${color} ${pct * 3.6}deg, rgba(255,255,255,0.06) 0deg)`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      boxShadow: `0 0 16px ${color}30`
-    }}>
-      <div style={{
-        width: size - 14, height: size - 14, borderRadius: '50%',
-        backgroundColor: 'var(--bg-card)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1px'
-      }}>
-        {emoji && <span style={{ fontSize: size * 0.22 }}>{emoji}</span>}
-        <span style={{ fontSize: size * 0.2, fontWeight: '800', color: '#fff', lineHeight: 1 }}>{pct}%</span>
-      </div>
-    </div>
-    {label && <div style={{ fontSize: '0.7rem', color: '#fff', fontWeight: '700', textAlign: 'center', maxWidth: size }}>{label}</div>}
-    {sublabel && <div style={{ fontSize: '0.65rem', color: '#64748b', textAlign: 'center', maxWidth: size }}>{sublabel}</div>}
-  </div>
-);
 
 // ─── KPI Stat Card ────────────────────────────────────────────────────────────
 const StatCard = ({ emoji, label, value, color = '#6366f1', sub }) => (
@@ -87,60 +58,6 @@ const StatCard = ({ emoji, label, value, color = '#6366f1', sub }) => (
   </div>
 );
 
-// ─── Badge Card ───────────────────────────────────────────────────────────────
-const BadgeCard = ({ badge, unlocked, timestamp, progress }) => (
-  <div style={{
-    backgroundColor: unlocked ? `${badge.color}10` : 'rgba(255,255,255,0.01)',
-    border: `1px solid ${unlocked ? badge.color + '40' : 'rgba(255,255,255,0.06)'}`,
-    borderRadius: '12px', padding: '1.1rem',
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
-    opacity: unlocked ? 1 : 0.5,
-    transition: 'all 0.3s ease',
-    animation: unlocked ? 'badgeUnlock 0.5s cubic-bezier(0.34,1.56,0.64,1)' : 'none',
-    filter: unlocked ? 'none' : 'grayscale(1)',
-    cursor: unlocked ? 'default' : 'not-allowed',
-    position: 'relative',
-    overflow: 'hidden'
-  }}>
-    <div style={{ fontSize: '2.2rem', filter: unlocked ? `drop-shadow(0 0 8px ${badge.color})` : 'none' }}>
-      {badge.emoji}
-    </div>
-    <div style={{ fontSize: '0.75rem', fontWeight: '800', color: unlocked ? badge.color : '#475569', textAlign: 'center' }}>
-      {badge.name}
-    </div>
-    <div style={{ fontSize: '0.65rem', color: '#64748b', textAlign: 'center', lineHeight: '1.4' }}>
-      {badge.desc}
-    </div>
-    
-    <div style={{ 
-      fontSize: '0.6rem', 
-      color: unlocked ? '#cbd5e1' : '#475569', 
-      textAlign: 'center', 
-      marginTop: '0.2rem',
-      borderTop: '1px dashed rgba(255,255,255,0.04)',
-      paddingTop: '0.3rem',
-      width: '100%'
-    }}>
-      <strong>Condition:</strong> {badge.unlockCondition}
-    </div>
-    
-    <div style={{ fontSize: '0.6rem', color: unlocked ? badge.color : '#64748b', fontWeight: '700' }}>
-      Progress: {progress}
-    </div>
-
-    {unlocked && (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem' }}>
-        <div style={{
-          fontSize: '0.6rem', fontWeight: '700', backgroundColor: badge.color + '20',
-          color: badge.color, padding: '0.15rem 0.5rem', borderRadius: '20px', textTransform: 'uppercase'
-        }}>✓ Unlocked</div>
-        {timestamp && (
-          <div style={{ fontSize: '0.55rem', color: '#64748b' }}>Earned: {timestamp}</div>
-        )}
-      </div>
-    )}
-  </div>
-);
 
 // ─── Resource list item ───────────────────────────────────────────────────────
 const ResourceItem = ({ res }) => {
@@ -200,6 +117,10 @@ const ProjectCard = ({ proj }) => {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
+  const location = useLocation();
+  const stateRoadmapData = location.state?.roadmapData;
+  const initialRoadmapData = roadmapData || stateRoadmapData;
+
   const [activeSubTab, setActiveSubTab] = useState('timeline');
   const [selectedMonth, setSelectedMonth] = useState(1);
   const [expandedWeeks, setExpandedWeeks] = useState({});
@@ -209,39 +130,75 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
   const [shareLoading, setShareLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [shareMsg, setShareMsg] = useState('');
-  const [newlyUnlocked, setNewlyUnlocked] = useState(new Set());
+  
+  // SaaS live state
+  const [loading, setLoading] = useState(!initialRoadmapData);
+  const [liveRoadmap, setLiveRoadmap] = useState(initialRoadmapData);
+  const [apiTasks, setApiTasks] = useState([]);
+  const [apiProgress, setApiProgress] = useState(null);
+  const [apiAnalytics, setApiAnalytics] = useState(null);
 
-  if (!roadmapData) return null;
+  useEffect(() => {
+    const fetchActiveRoadmap = async () => {
+      try {
+        if (!initialRoadmapData) {
+          setLoading(true);
+        }
+        const res = await getActiveRoadmap();
+        if (res?.success && res.data?.roadmap) {
+          const combined = {
+            ...res.data.roadmap,
+            milestones: res.data.milestones || [],
+            progress: res.data.progress,
+            analytics: res.data.analytics
+          };
+          setLiveRoadmap(combined);
+          setApiTasks(res.data.tasks || []);
+          setApiProgress(res.data.progress);
+          setApiAnalytics(res.data.analytics);
+        }
+      } catch (err) {
+        console.error("Failed to fetch active roadmap:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchActiveRoadmap();
+  }, [initialRoadmapData]);
 
-  const career = roadmapData.career;
-  const jm = roadmapData.job_market;
-  const cf = roadmapData.career_forecast;
+  // Helper for index/milestone_index mapping
+  const getMsIndex = (ms) => ms.milestone_index !== undefined ? ms.milestone_index : ms.index;
 
   // ── Load progress from localStorage ────────────────────────────────────────
   useEffect(() => {
-    const saved = loadProgress(career);
-    const savedTimestamps = localStorage.getItem(BADGE_TIMESTAMPS_KEY(career));
-    setBadgeTimestamps(savedTimestamps ? JSON.parse(savedTimestamps) : {});
+    if (liveRoadmap?.milestones) {
+      const init = {};
+      const completedIndices = apiProgress?.completed_milestones || [];
+      (liveRoadmap?.milestones || []).forEach(m => {
+        const index = getMsIndex(m);
+        const isComplete = completedIndices.includes(index) || m.complete;
+        init[index] = isComplete ? STATUS.COMPLETED : STATUS.NOT_STARTED;
+      });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setMilestoneProgress(init);
+    }
+  }, [liveRoadmap, apiProgress]);
 
-    // Auto-populate: milestones with complete=true from backend start as completed
-    const init = { ...saved };
-    roadmapData.milestones.forEach(m => {
-      if (m.complete && !init[m.index]) {
-        init[m.index] = STATUS.COMPLETED;
-      } else if (!init[m.index]) {
-        init[m.index] = STATUS.NOT_STARTED;
-      }
-    });
-    setMilestoneProgress(init);
-  }, [career, roadmapData.milestones]);
+
+
+  const career = liveRoadmap?.career;
+  const jm = liveRoadmap?.job_market;
+  const cf = liveRoadmap?.career_forecast;
 
   // ── Skill status mapping ───────────────────────────────────────────────────
   const skillStatus = {};
-  (roadmapData.matched_skills || []).forEach(s => {
+  ((liveRoadmap?.matched_skills || []) || []).forEach(s => {
     skillStatus[s.toLowerCase().trim()] = STATUS.COMPLETED;
   });
-  roadmapData.milestones.forEach(m => {
-    const status = milestoneProgress[m.index] || STATUS.NOT_STARTED;
+  (liveRoadmap?.milestones || []).forEach(m => {
+    const idx = getMsIndex(m);
+    const status = milestoneProgress[idx] || STATUS.NOT_STARTED;
     m.skills.forEach(s => {
       const s_key = s.toLowerCase().trim();
       if (status === STATUS.COMPLETED || m.complete) {
@@ -252,34 +209,42 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
     });
   });
 
-  const masteredSkillsSet = new Set(roadmapData.matched_skills || []);
-  roadmapData.milestones.forEach(m => {
-    if (milestoneProgress[m.index] === STATUS.COMPLETED || m.complete) {
+  const masteredSkillsSet = new Set((liveRoadmap?.matched_skills || []) || []);
+  (liveRoadmap?.milestones || []).forEach(m => {
+    const idx = getMsIndex(m);
+    if (milestoneProgress[idx] === STATUS.COMPLETED || m.complete) {
       m.skills.forEach(s => masteredSkillsSet.add(s));
     }
   });
   const liveSkillsMastered = masteredSkillsSet.size;
 
   const allSkillsSet = new Set([
-    ...(roadmapData.matched_skills || []),
-    ...(roadmapData.missing_skills || [])
+    ...((liveRoadmap?.matched_skills || []) || []),
+    ...((liveRoadmap?.missing_skills || []) || [])
   ]);
   const liveSkillsRemaining = Math.max(0, allSkillsSet.size - liveSkillsMastered);
 
   // ── Computed metrics ────────────────────────────────────────────────────────
-  const totalMilestones = roadmapData.milestones.filter(m => !m.title.toLowerCase().includes('ready')).length;
+  const totalMilestones = (liveRoadmap?.milestones || []).filter(m => !m.title.toLowerCase().includes('ready')).length;
   const completedCount = Object.values(milestoneProgress).filter(s => s === STATUS.COMPLETED).length;
   const inProgressCount = Object.values(milestoneProgress).filter(s => s === STATUS.IN_PROGRESS).length;
-  const completionPct = totalMilestones > 0 ? Math.round((completedCount / totalMilestones) * 100) : 0;
   
-  const baseReadiness = roadmapData.progress?.completion_percentage || 0;
-  const liveReadiness = completionPct >= 100 ? roadmapData.expected_readiness : Math.min(99, Math.round(baseReadiness + (completionPct / 100) * (roadmapData.expected_readiness - baseReadiness)));
+  // Use DB-recalculated completion percentages if available
+  const completionPct = apiProgress 
+    ? Math.round(apiProgress.current_roadmap_completion) 
+    : (totalMilestones > 0 ? Math.round((completedCount / totalMilestones) * 100) : 0);
+  
+  const baseReadiness = (liveRoadmap?.progress?.completion_percentage || 0) || 0;
+  const liveReadiness = apiProgress
+    ? apiProgress.current_readiness
+    : (completionPct >= 100 ? (liveRoadmap?.expected_readiness || 0) : Math.min(99, Math.round(baseReadiness + (completionPct / 100) * ((liveRoadmap?.expected_readiness || 0) - baseReadiness))));
+  
   const skillAcqPct = Math.min(100, completionPct + Math.round(inProgressCount * (50 / Math.max(totalMilestones, 1))));
 
   // Success Probability live calculation
   const demandLevel = jm?.demand_level || 'High';
   const demandLower = demandLevel.toLowerCase();
-  let demandContrib = 10;
+  let demandContrib;
   if (demandLower.includes("very high") || demandLower.includes("critical")) {
     demandContrib = 15;
   } else if (demandLower.includes("high")) {
@@ -290,9 +255,9 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
     demandContrib = 2;
   }
 
-  const projectsList = roadmapData.projects || [];
+  const projectsList = (liveRoadmap?.projects || []) || [];
   const projectCount = projectsList.length;
-  let portfolioContrib = 0;
+  let portfolioContrib;
   if (projectCount >= 2) {
     portfolioContrib = 15;
   } else if (projectCount === 1) {
@@ -300,29 +265,30 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
   } else {
     portfolioContrib = 0;
   }
-  const liveSuccessProbability = Math.min(98, Math.round(liveReadiness + demandContrib + portfolioContrib));
+  
+  const liveSuccessProbability = apiAnalytics 
+    ? apiAnalytics.success_probability 
+    : Math.min(98, Math.round(liveReadiness + demandContrib + portfolioContrib));
 
   // Dynamic Durations
-  const getWeekStatus = (week, monthSkills) => {
-    const titleLower = week.title.toLowerCase();
-    const matchingSkill = monthSkills.find(s => 
-      titleLower.includes(s.toLowerCase()) || 
-      week.topics.some(t => t.toLowerCase().includes(s.toLowerCase()))
-    ) || monthSkills[0];
-    if (!matchingSkill) return STATUS.NOT_STARTED;
-    return skillStatus[matchingSkill.toLowerCase().trim()] || STATUS.NOT_STARTED;
+  const getWeekStatus = (weekNumber) => {
+    const weekTasks = apiTasks.filter(t => t.week_number === weekNumber);
+    if (weekTasks.length === 0) return STATUS.NOT_STARTED;
+    if (weekTasks.every(t => t.status === 'Completed')) return STATUS.COMPLETED;
+    if (weekTasks.some(t => t.status === 'Completed' || t.status === 'In Progress')) return STATUS.IN_PROGRESS;
+    return STATUS.NOT_STARTED;
   };
 
   let completedWeeksCount = 0;
-  roadmapData.monthly_roadmap.forEach(month => {
+  (liveRoadmap?.monthly_roadmap || []).forEach(month => {
     month.weeks.forEach(week => {
-      if (getWeekStatus(week, month.skills) === STATUS.COMPLETED) {
+      if (getWeekStatus(week.week_number) === STATUS.COMPLETED) {
         completedWeeksCount++;
       }
     });
   });
 
-  const remainingWeeks = Math.max(0, roadmapData.total_weeks - completedWeeksCount);
+  const remainingWeeks = Math.max(0, (liveRoadmap?.total_weeks || 0) - completedWeeksCount);
   const remainingMonths = Math.max(0, Math.ceil(remainingWeeks / 4));
   const remainingStudyHours = remainingWeeks * 8;
 
@@ -336,22 +302,13 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
   // ── Badge earned functions ──────────────────────────────────────────────────
   const checkIsEarned = (badge) => {
     if (badge.id === 'career_ready') return completionPct >= 100;
-    const matches = roadmapData.milestones.filter(m => 
+    const matches = (liveRoadmap?.milestones || []).filter(m => 
       badge.milestoneKeywords.some(kw => m.title.toLowerCase().includes(kw))
     );
     if (matches.length === 0) return false;
-    return matches.every(m => milestoneProgress[m.index] === STATUS.COMPLETED);
+    return matches.every(m => milestoneProgress[getMsIndex(m)] === STATUS.COMPLETED);
   };
 
-  const getBadgeProgress = (badge) => {
-    if (badge.id === 'career_ready') return `${completionPct}%`;
-    const matches = roadmapData.milestones.filter(m => 
-      badge.milestoneKeywords.some(kw => m.title.toLowerCase().includes(kw))
-    );
-    if (matches.length === 0) return "N/A";
-    const completed = matches.filter(m => milestoneProgress[m.index] === STATUS.COMPLETED).length;
-    return `${completed}/${matches.length}`;
-  };
 
   const unlockedBadges = BADGE_CATALOG.filter(badge => checkIsEarned(badge));
 
@@ -370,54 +327,182 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
       }
     });
     if (changed) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBadgeTimestamps(updated);
       localStorage.setItem(BADGE_TIMESTAMPS_KEY(career), JSON.stringify(updated));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [milestoneProgress, completionPct, career]);
 
   // ── Milestone status toggle ─────────────────────────────────────────────────
-  const toggleMilestoneStatus = useCallback((milestoneIndex) => {
-    setMilestoneProgress(prev => {
-      const current = prev[milestoneIndex] || STATUS.NOT_STARTED;
-      const next = nextStatus[current];
-      const updated = { ...prev, [milestoneIndex]: next };
-      saveProgress(career, updated);
-
-      // Trigger temporary newly unlocked badges state for visual highlight
-      if (next === STATUS.COMPLETED) {
-        setTimeout(() => {
-          setNewlyUnlocked(nu => {
-            const s = new Set(nu);
-            BADGE_CATALOG.forEach(badge => {
-              const m = roadmapData.milestones.find(ms => ms.index === milestoneIndex);
-              if (m) {
-                const isMatch = badge.milestoneKeywords.some(kw => m.title.toLowerCase().includes(kw));
-                if (isMatch) s.add(badge.id);
-              }
-            });
-            return s;
-          });
-        }, 200);
-      }
-      return updated;
+  const toggleMilestoneStatus = useCallback(async (milestoneIndex) => {
+    const current = milestoneProgress[milestoneIndex] || STATUS.NOT_STARTED;
+    const next = nextStatus[current];
+    const nextBackendStatus = next === STATUS.COMPLETED ? 'Completed' : 'Not Started';
+    
+    // Find all tasks associated with this milestone
+    const milestone = (liveRoadmap?.milestones || []).find(m => getMsIndex(m) === milestoneIndex);
+    if (!milestone) return;
+    
+    const milestoneSkills = (milestone.skills || []).map(s => s.toLowerCase().trim());
+    const matchedTasks = apiTasks.filter(t => {
+      const titleLower = t.title.toLowerCase();
+      const descLower = (t.description || "").toLowerCase();
+      return milestoneSkills.some(skill => titleLower.includes(skill) || descLower.includes(skill));
     });
-  }, [career, roadmapData.milestones]);
+    
+    // If no tasks match by skills, fall back to week mapping
+    let tasksToUpdate = matchedTasks;
+    if (tasksToUpdate.length === 0) {
+      const weeksPerMilestone = Math.max(1, (liveRoadmap?.total_weeks || 0) / Math.max(1, (liveRoadmap?.milestones || []).length));
+      const startWeek = milestoneIndex * weeksPerMilestone + 1;
+      const endWeek = (milestoneIndex + 1) * weeksPerMilestone;
+      tasksToUpdate = apiTasks.filter(t => startWeek <= t.week_number && t.week_number <= endWeek);
+    }
+    
+    if (tasksToUpdate.length === 0) return;
+    
+    try {
+      // Update all these tasks to the next state in sequence
+      let lastRes = null;
+      for (const task of tasksToUpdate) {
+        lastRes = await updateTaskStatus(task.task_id, nextBackendStatus);
+      }
+      
+      if (lastRes?.success && lastRes.data) {
+        setApiTasks(lastRes.data.tasks || []);
+        setApiProgress(lastRes.data.progress);
+        setApiAnalytics(lastRes.data.analytics);
+        if (lastRes.data.milestones) {
+          const combined = {
+            ...liveRoadmap,
+            milestones: lastRes.data.milestones,
+            progress: lastRes.data.progress,
+            analytics: lastRes.data.analytics
+          };
+          setLiveRoadmap(combined);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to toggle milestone tasks:", err);
+    }
+  }, [liveRoadmap, apiTasks, milestoneProgress]);
 
   const toggleWeek = (wn) => setExpandedWeeks(prev => ({ ...prev, [wn]: !prev[wn] }));
   const toggleMilestone = (idx) => setExpandedMilestones(prev => ({ ...prev, [idx]: !prev[idx] }));
 
-  const currentMonthPlan = roadmapData.monthly_roadmap.find(m => m.month_number === selectedMonth) || roadmapData.monthly_roadmap[0];
+  const getWeekTasks = (weekNumber) => {
+    return apiTasks.filter(t => t.week_number === weekNumber);
+  };
+
+  const renderTaskItem = (task) => {
+    const statusIcons = { not_started: '⏳', in_progress: '🔄', completed: '✅', skipped: '🛑' };
+    const statusLabels = { not_started: 'Not Started', in_progress: 'In Progress', completed: 'Completed', skipped: 'Skipped' };
+    const statusBgColors = { not_started: 'rgba(255,255,255,0.02)', in_progress: 'rgba(245,158,11,0.08)', completed: 'rgba(16,185,129,0.08)', skipped: 'rgba(239,68,68,0.08)' };
+    const statusBorders = { not_started: 'var(--border-color)', in_progress: 'rgba(245,158,11,0.3)', completed: 'rgba(16,185,129,0.3)', skipped: 'rgba(239,68,68,0.3)' };
+    const statusTextColors = { not_started: 'var(--text-muted)', in_progress: '#f59e0b', completed: 'var(--success)', skipped: '#f87171' };
+    
+    const normStatus = (task.status || 'Not Started').toLowerCase().replace(' ', '_');
+    
+    const cycleStatus = async () => {
+      const statusCycle = ['not_started', 'in_progress', 'completed', 'skipped'];
+      const nextIdx = (statusCycle.indexOf(normStatus) + 1) % statusCycle.length;
+      const nextNorm = statusCycle[nextIdx];
+      const nextBackendStatus = nextNorm.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      
+      try {
+        const res = await updateTaskStatus(task.task_id, nextBackendStatus);
+        if (res.success && res.data) {
+          setApiTasks(res.data.tasks || []);
+          setApiProgress(res.data.progress);
+          setApiAnalytics(res.data.analytics);
+          if (res.data.milestones) {
+            const combined = {
+              ...liveRoadmap,
+              milestones: res.data.milestones,
+              progress: res.data.progress,
+              analytics: res.data.analytics
+            };
+            setLiveRoadmap(combined);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to update task status:", err);
+      }
+    };
+    
+    return (
+      <div key={task.id} style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '0.6rem 0.85rem',
+        backgroundColor: statusBgColors[normStatus],
+        border: `1px solid ${statusBorders[normStatus]}`,
+        borderRadius: '6px',
+        fontSize: '0.82rem',
+        gap: '0.75rem',
+        transition: 'all 0.2s ease'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+            <span style={{ 
+              fontSize: '0.62rem', 
+              fontWeight: '700', 
+              backgroundColor: 'rgba(255,255,255,0.05)', 
+              color: '#a5b4fc', 
+              padding: '0.1rem 0.35rem', 
+              borderRadius: '3px',
+              textTransform: 'uppercase'
+            }}>
+              {task.type}
+            </span>
+            <span style={{ fontWeight: '600', color: '#fff', textAlign: 'left' }}>{task.title}</span>
+          </div>
+          {task.description && (
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'left' }}>{task.description}</span>
+          )}
+        </div>
+        
+        <button 
+          onClick={cycleStatus} 
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.3rem',
+            fontSize: '0.72rem',
+            fontWeight: '700',
+            backgroundColor: 'transparent',
+            border: `1px solid ${statusBorders[normStatus]}`,
+            color: statusTextColors[normStatus],
+            padding: '0.25rem 0.6rem',
+            borderRadius: '20px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap'
+          }}
+          onMouseEnter={(e) => { e.target.style.backgroundColor = statusTextColors[normStatus] + '15'; }}
+          onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; }}
+        >
+          <span>{statusIcons[normStatus]}</span>
+          <span>{statusLabels[normStatus]}</span>
+        </button>
+      </div>
+    );
+  };
+
+  const currentMonthPlan = (liveRoadmap?.monthly_roadmap || []).find(m => m.month_number === selectedMonth) || (liveRoadmap?.monthly_roadmap || [])[0];
 
   // ── Share roadmap ───────────────────────────────────────────────────────────
   const handleShare = async () => {
     setShareLoading(true);
     setShareMsg('');
     try {
-      const result = await shareRoadmap(roadmapData, candidateName || 'Candidate');
+      const result = await shareRoadmap(liveRoadmap, candidateName || 'Candidate');
       const fullUrl = `${window.location.origin}${window.location.pathname}#shared/${result.share_id}`;
       await navigator.clipboard.writeText(fullUrl);
       setShareMsg('✓ Link copied to clipboard!');
-    } catch (err) {
+    } catch {
       setShareMsg('⚠ Failed to generate share link.');
     } finally {
       setShareLoading(false);
@@ -429,7 +514,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
   const handleExportPDF = async () => {
     setPdfLoading(true);
     try {
-      await exportRoadmapPDF(roadmapData, candidateName || 'Candidate');
+      await exportRoadmapPDF(liveRoadmap, candidateName || 'Candidate');
     } catch (err) {
       alert(`PDF export failed: ${err.message}`);
     } finally {
@@ -440,6 +525,24 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────
+  // If liveRoadmap is not loaded yet
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '6rem 2rem' }}>
+        <div className="spinner"></div>
+        <p style={{ color: 'var(--text-muted)', fontWeight: '500' }}>Loading live study progress...</p>
+      </div>
+    );
+  }
+
+  if (!liveRoadmap) {
+    return (
+      <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+        No active career roadmap found.
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
       {/* CSS for badge animation */}
@@ -471,10 +574,10 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
             </h2>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.25rem' }}>
               <span style={{ fontSize: '0.72rem', fontWeight: '600', backgroundColor: 'rgba(255,255,255,0.03)', color: 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '0.22rem 0.6rem', borderRadius: '4px' }}>
-                ⏱️ {roadmapData.total_weeks}w / {roadmapData.total_months}mo
+                ⏱️ {(liveRoadmap?.total_weeks || 0)}w / {(liveRoadmap?.total_months || 0)}mo
               </span>
-              <span style={{ fontSize: '0.72rem', fontWeight: '700', backgroundColor: `${getDifficultyColor(roadmapData.difficulty)}15`, color: getDifficultyColor(roadmapData.difficulty), border: `1px solid ${getDifficultyColor(roadmapData.difficulty)}30`, padding: '0.22rem 0.6rem', borderRadius: '4px', textTransform: 'uppercase' }}>
-                ⚡ {roadmapData.difficulty}
+              <span style={{ fontSize: '0.72rem', fontWeight: '700', backgroundColor: `${getDifficultyColor((liveRoadmap?.difficulty || 'Beginner'))}15`, color: getDifficultyColor((liveRoadmap?.difficulty || 'Beginner')), border: `1px solid ${getDifficultyColor((liveRoadmap?.difficulty || 'Beginner'))}30`, padding: '0.22rem 0.6rem', borderRadius: '4px', textTransform: 'uppercase' }}>
+                ⚡ {(liveRoadmap?.difficulty || 'Beginner')}
               </span>
               {jm?.demand_level && (
                 <span style={{ fontSize: '0.72rem', fontWeight: '700', backgroundColor: `${getDemandColor(jm.demand_level)}15`, color: getDemandColor(jm.demand_level), border: `1px solid ${getDemandColor(jm.demand_level)}30`, padding: '0.22rem 0.6rem', borderRadius: '4px' }}>
@@ -541,27 +644,6 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
         </div>
       </div>
 
-      {/* ─── Live Progress Bar ─────────────────────────────────────────────── */}
-      <div style={{ backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '10px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.4rem', fontWeight: '700' }}>
-          <span style={{ color: 'var(--text-light)' }}>Live Roadmap Completion</span>
-          <span style={{ color: 'var(--primary)' }}>{completionPct}% complete • {completedCount}/{totalMilestones} milestones</span>
-        </div>
-        <div style={{ width: '100%', height: '8px', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
-          <div style={{
-            width: `${completionPct}%`, height: '100%',
-            background: `linear-gradient(90deg, var(--primary), #10b981)`,
-            borderRadius: '4px', transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)'
-          }} />
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', marginTop: '0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <div>✅ Completed: <strong style={{ color: 'var(--success)' }}>{completedCount}</strong></div>
-          <div>🔄 In Progress: <strong style={{ color: '#fbbf24' }}>{inProgressCount}</strong></div>
-          <div>⏳ Remaining: <strong style={{ color: '#94a3b8' }}>{totalMilestones - completedCount - inProgressCount}</strong></div>
-          <div>📊 Skill Acquisition: <strong style={{ color: '#a5b4fc' }}>{skillAcqPct}%</strong></div>
-          <div>🎯 Live Readiness: <strong style={{ color: 'var(--success)' }}>{liveReadiness}%</strong></div>
-        </div>
-      </div>
 
       {/* ─── Tab Navigation ───────────────────────────────────────────────── */}
       <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', gap: '0.25rem', overflowX: 'auto' }}>
@@ -571,7 +653,6 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
           { id: 'milestones',   label: '🏆 Milestones' },
           { id: 'intelligence', label: '📡 Career Intel' },
           { id: 'analytics',    label: '📊 Analytics' },
-          { id: 'badges',       label: `🏅 Badges (${unlockedBadges.length}/${BADGE_CATALOG.length})` },
         ].map(tab => (
           <button key={tab.id} onClick={() => setActiveSubTab(tab.id)} style={{
             backgroundColor: 'transparent', border: 'none', whiteSpace: 'nowrap',
@@ -588,7 +669,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {activeSubTab === 'timeline' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', paddingLeft: '1.25rem', borderLeft: '2px solid rgba(99,102,241,0.3)', position: 'relative' }}>
-          {roadmapData.monthly_roadmap.map((month, idx) => {
+          {(liveRoadmap?.monthly_roadmap || []).map((month, idx) => {
             const isCapstone = month.title.toLowerCase().includes('capstone') || month.title.toLowerCase().includes('portfolio');
             const dotColor = isCapstone ? '#10b981' : '#6366f1';
             return (
@@ -615,7 +696,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }}>
           {/* Month selector pills */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '1px dashed var(--border-color)', paddingBottom: '1rem' }}>
-            {roadmapData.monthly_roadmap.map(month => (
+            {(liveRoadmap?.monthly_roadmap || []).map(month => (
               <button key={month.month_number} onClick={() => setSelectedMonth(month.month_number)} style={{
                 backgroundColor: selectedMonth === month.month_number ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
                 border: '1px solid var(--border-color)',
@@ -659,8 +740,8 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
                       backgroundColor: 'rgba(255,255,255,0.005)',
                       animation: 'fadeIn 0.2s ease' 
                     }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'flex-start' }}>
-                        {/* Left Column */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '1.5rem', alignItems: 'flex-start' }}>
+                        {/* Left Column: Topics & Resources */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                           <div>
                             <h5 style={{ fontSize: '0.72rem', fontWeight: '700', color: '#a5b4fc', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -670,17 +751,6 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
                               {week.topics?.map((t, i) => <li key={i}>{t}</li>)}
                             </ul>
                           </div>
-                          
-                          {week.practice_tasks?.length > 0 && (
-                            <div>
-                              <h5 style={{ fontSize: '0.72rem', fontWeight: '700', color: '#fbbf24', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                🛠️ Hands-on Practice
-                              </h5>
-                              <ul style={{ paddingLeft: '1.1rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.8rem', color: '#cbd5e1' }}>
-                                {week.practice_tasks.map((pt, i) => <li key={i}>{pt}</li>)}
-                              </ul>
-                            </div>
-                          )}
 
                           {week.expected_outcome && (
                             <div style={{ 
@@ -697,41 +767,6 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
                               </p>
                             </div>
                           )}
-                        </div>
-
-                        {/* Right Column */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                          {week.mini_assignments?.length > 0 && (
-                            <div>
-                              <h5 style={{ fontSize: '0.72rem', fontWeight: '700', color: '#f472b6', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                ✏️ Mini Assignments
-                              </h5>
-                              <ul style={{ paddingLeft: '1.1rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.8rem', color: '#cbd5e1' }}>
-                                {week.mini_assignments.map((ma, i) => <li key={i}>{ma}</li>)}
-                              </ul>
-                            </div>
-                          )}
-
-                          {week.quiz && (
-                            <div>
-                              <h5 style={{ fontSize: '0.72rem', fontWeight: '700', color: '#60a5fa', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                ❓ Weekly Assessment
-                              </h5>
-                              <div style={{ 
-                                fontSize: '0.78rem', 
-                                color: '#e2e8f0', 
-                                backgroundColor: 'rgba(96,165,250,0.05)', 
-                                border: '1px solid rgba(96,165,250,0.15)', 
-                                borderRadius: '6px', 
-                                padding: '0.4rem 0.6rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.4rem'
-                              }}>
-                                <span>📝</span> <strong>Quiz:</strong> {week.quiz}
-                              </div>
-                            </div>
-                          )}
 
                           {week.resources?.length > 0 && (
                             <div>
@@ -742,6 +777,20 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
                                 {week.resources.map((res, i) => <ResourceItem key={i} res={res} />)}
                               </div>
                             </div>
+                          )}
+                        </div>
+
+                        {/* Right Column: Interactive Checklist Tasks */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                          <h5 style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '0.2rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            📋 Weekly Progress Checklist
+                          </h5>
+                          {getWeekTasks(week.week_number).length > 0 ? (
+                            getWeekTasks(week.week_number).map(task => renderTaskItem(task))
+                          ) : (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                              No tasks generated for this week.
+                            </span>
                           )}
                         </div>
                       </div>
@@ -780,17 +829,14 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {activeSubTab === 'milestones' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', backgroundColor: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: '8px', padding: '0.75rem 1rem' }}>
-            💡 Click a milestone status badge to cycle through: <strong style={{ color: '#fbbf24' }}>Not Started</strong> → <strong style={{ color: '#fbbf24' }}>In Progress</strong> → <strong style={{ color: '#10b981' }}>Completed</strong>. Progress saves automatically.
-          </div>
-
-          {roadmapData.milestones.map(ms => {
-            const status = milestoneProgress[ms.index] || STATUS.NOT_STARTED;
-            const isExpanded = expandedMilestones[ms.index];
+          {(liveRoadmap?.milestones || []).map(ms => {
+            const idx = getMsIndex(ms);
+            const status = milestoneProgress[idx] || STATUS.NOT_STARTED;
+            const isExpanded = expandedMilestones[idx];
             const isFinal = ms.title.toLowerCase().includes('ready');
 
             return (
-              <div key={ms.index} style={{
+              <div key={idx} style={{
                 backgroundColor: statusBg[status], border: `1px solid ${statusBorder[status]}`,
                 borderRadius: '10px', overflow: 'hidden', transition: 'all 0.3s ease'
               }}>
@@ -798,7 +844,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
                 <div style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   {/* Status badge (clickable) */}
                   <button
-                    onClick={() => !isFinal && toggleMilestoneStatus(ms.index)}
+                    onClick={() => !isFinal && toggleMilestoneStatus(idx)}
                     disabled={isFinal}
                     style={{
                       fontSize: '0.65rem', fontWeight: '700',
@@ -822,7 +868,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
 
                   {/* Expand toggle */}
                   {!isFinal && (ms.resources?.length > 0 || ms.projects?.length > 0) && (
-                    <button onClick={() => toggleMilestone(ms.index)} style={{
+                    <button onClick={() => toggleMilestone(idx)} style={{
                       backgroundColor: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)',
                       padding: '0.3rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', flexShrink: 0,
                       transition: 'all 0.2s ease'
@@ -876,7 +922,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.85rem' }}>
                 <StatCard emoji="🎯" label="Current Readiness" value={`${liveReadiness}%`} color="#6366f1" />
-                <StatCard emoji="🚀" label="Projected Readiness" value={`${roadmapData.expected_readiness}%`} color="#10b981" sub="After completing roadmap" />
+                <StatCard emoji="🚀" label="Projected Readiness" value={`${(liveRoadmap?.expected_readiness || 0)}%`} color="#10b981" sub="After completing roadmap" />
                 <StatCard emoji="📈" label="Success Probability" value={`${liveSuccessProbability}%`} color="#f59e0b" sub="Job landing estimate" />
                 <StatCard emoji="⏱️" label="Time to Job Ready" value={remainingWeeks > 0 ? `${remainingWeeks}w (~${remainingMonths}mo)` : 'Job Ready!'} color="#60a5fa" />
                 <StatCard emoji="✅" label="Skills Mastered" value={liveSkillsMastered} color="#34d399" />
@@ -1022,32 +1068,19 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {activeSubTab === 'analytics' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          {/* Progress rings row */}
-          <div>
-            <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-light)', marginBottom: '1.25rem', fontFamily: "'Outfit',sans-serif" }}>
-              📊 Career Readiness Analytics
-            </h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '2rem' }}>
-              <ProgressRing pct={liveReadiness} size={100} color="#6366f1" label="Career Readiness" sublabel="Live score" emoji="🎯" />
-              <ProgressRing pct={roadmapData.expected_readiness} size={100} color="#10b981" label="Projected Readiness" sublabel="After completion" emoji="🚀" />
-              <ProgressRing pct={completionPct} size={100} color="#f59e0b" label="Roadmap Completion" sublabel={`${completedCount}/${totalMilestones} milestones`} emoji="🏆" />
-              <ProgressRing pct={skillAcqPct} size={100} color="#f472b6" label="Skill Acquisition" sublabel="In progress + done" emoji="📚" />
-              <ProgressRing pct={liveSuccessProbability} size={100} color="#38bdf8" label="Success Probability" sublabel="Job landing estimate" emoji="📈" />
-            </div>
-          </div>
 
           {/* KPI cards grid */}
           <div>
             <h4 style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.85rem' }}>Key Performance Indicators</h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '0.75rem' }}>
               <StatCard emoji="🎯" label="Current Readiness" value={`${liveReadiness}%`} color="#6366f1" />
-              <StatCard emoji="🚀" label="Projected Readiness" value={`${roadmapData.expected_readiness}%`} color="#10b981" />
+              <StatCard emoji="🚀" label="Projected Readiness" value={`${(liveRoadmap?.expected_readiness || 0)}%`} color="#10b981" />
               <StatCard emoji="✅" label="Skills Mastered" value={liveSkillsMastered} color="#34d399" />
               <StatCard emoji="📚" label="Skills Remaining" value={liveSkillsRemaining} color="#f472b6" />
               <StatCard emoji="⏱️" label="Est. Job Ready" value={remainingWeeks > 0 ? `${remainingWeeks} weeks` : 'Ready!'} color="#60a5fa" />
               <StatCard emoji="📈" label="Success Probability" value={`${liveSuccessProbability}%`} color="#f59e0b" />
               <StatCard emoji="🏆" label="Milestones Done" value={`${completedCount}/${totalMilestones}`} color="#a78bfa" />
-              <StatCard emoji="🛠️" label="Projects Available" value={roadmapData.milestones.reduce((acc, m) => acc + (m.projects?.length || 0), 0)} color="#38bdf8" sub="Portfolio projects" />
+              <StatCard emoji="🛠️" label="Projects Available" value={(liveRoadmap?.milestones || []).reduce((acc, m) => acc + (m.projects?.length || 0), 0)} color="#38bdf8" sub="Portfolio projects" />
               {jm && <StatCard emoji="💰" label="India Salary" value={jm.india_salary?.formatted || '—'} color="#f97316" />}
               {jm && <StatCard emoji="🌍" label="Global Salary" value={jm.global_salary?.formatted || '—'} color="#38bdf8" />}
               {jm && <StatCard emoji="💼" label="Job Openings" value={formatNumber(jm.estimated_job_openings)} color="#fbbf24" />}
@@ -1065,14 +1098,11 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {[
                 { label: 'Completed', count: completedCount, color: '#10b981', icon: '✅' },
-                { label: 'In Progress', count: inProgressCount, color: '#fbbf24', icon: '🔄' },
-                { label: 'Not Started', count: totalMilestones - completedCount - inProgressCount, color: '#64748b', icon: '⏳' },
+                { label: 'Uncompleted', count: totalMilestones - completedCount, color: '#ef4444', icon: '❌' },
               ].map(row => (
                 <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <span style={{ fontSize: '0.8rem', color: row.color, width: '110px', flexShrink: 0, fontWeight: '600' }}>{row.icon} {row.label}</span>
-                  <div style={{ flex: 1, height: '6px', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
-                    <div style={{ width: `${totalMilestones > 0 ? (row.count / totalMilestones) * 100 : 0}%`, height: '100%', backgroundColor: row.color, borderRadius: '3px', transition: 'width 0.6s ease' }} />
-                  </div>
+                  <div style={{ flex: 1 }} />
                   <span style={{ fontSize: '0.8rem', color: row.color, fontWeight: '700', width: '30px', textAlign: 'right' }}>{row.count}</span>
                 </div>
               ))}
@@ -1080,48 +1110,9 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
           </div>
         </div>
       )}
-
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* TAB: BADGES & ACHIEVEMENTS                                          */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {activeSubTab === 'badges' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div style={{ backgroundColor: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: '10px', padding: '1rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-light)' }}>🏅 Achievement Badges</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Complete milestones to unlock achievements. Progress saves automatically.</div>
-            </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#10b981', fontFamily: "'Outfit',sans-serif" }}>
-              {unlockedBadges.length} / {BADGE_CATALOG.length} Unlocked
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
-            {BADGE_CATALOG.map(badge => (
-              <BadgeCard 
-                key={badge.id} 
-                badge={badge} 
-                unlocked={unlockedBadges.some(b => b.id === badge.id)} 
-                timestamp={badgeTimestamps[badge.id]}
-                progress={getBadgeProgress(badge)}
-              />
-            ))}
-          </div>
-
-          {unlockedBadges.length > 0 && (
-            <div style={{ backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '1.1rem' }}>
-              <h4 style={{ fontSize: '0.8rem', fontWeight: '700', color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.65rem' }}>🎉 Your Achievements</h4>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {unlockedBadges.map(badge => (
-                  <span key={badge.id} style={{ fontSize: '0.8rem', fontWeight: '600', backgroundColor: `${badge.color}15`, color: badge.color, border: `1px solid ${badge.color}30`, padding: '0.3rem 0.75rem', borderRadius: '20px' }}>
-                    {badge.emoji} {badge.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
+
+export default RoadmapDashboard;
+

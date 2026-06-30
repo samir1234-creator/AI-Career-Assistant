@@ -7,6 +7,7 @@ class CareerRecommendationRequest(BaseModel):
     education: List[str] = Field(default_factory=list, description="List of education records")
     certifications: List[str] = Field(default_factory=list, description="List of certifications")
     ats_score: int = Field(0, description="Overall ATS compatibility score (out of 100)")
+    resume_id: Optional[str] = Field(None, description="Optional associated resume UUID")
 
 class CareerRecommendation(BaseModel):
     role: str = Field(..., description="The recommended career role title")
