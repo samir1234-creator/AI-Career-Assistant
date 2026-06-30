@@ -3,7 +3,7 @@
  * Shared interview session engine used by all interview type pages.
  * Handles: question display → timer → answer → evaluate → next → complete → feedback
  */
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from "react";
 import { evaluateAnswer, submitCodingSolution, completeInterviewSession } from '../../services/api';
 
 // ─── SCORE RADAR CHART (pure CSS/SVG) ────────────────────────────────────────
@@ -113,12 +113,11 @@ export default function InterviewSession({ sessionData, interviewType, onBack, o
   const [answer, setAnswer] = useState('');
   const [evaluation, setEvaluation] = useState(null);
   const [evaluating, setEvaluating] = useState(false);
-  const [sessionAnswers, setSessionAnswers] = useState([]);
-  const [showFeedback, setShowFeedback] = useState(false);
+    const [showFeedback, setShowFeedback] = useState(false);
   const [sessionFeedback, setSessionFeedback] = useState(null);
   const [completing, setCompleting] = useState(false);
-  const [sessionStart] = useState(Date.now());
-  const [questionStart, setQuestionStart] = useState(Date.now());
+  const [sessionStart] = useState(() => Date.now());
+  const [questionStart, setQuestionStart] = useState(() => Date.now());
   const [timerKey, setTimerKey] = useState(0);
   const textRef = useRef();
 
@@ -151,8 +150,7 @@ export default function InterviewSession({ sessionData, interviewType, onBack, o
         });
       }
       setEvaluation(evalResult);
-      setSessionAnswers(prev => [...prev, { question_text: currentQ.text || currentQ.title, answer_text: answer, ...evalResult }]);
-    } catch (e) {
+      //     } catch {
       console.error('Evaluation failed', e);
       setEvaluation({ overall_score: 0, rating: 'Error', scores: {}, feedback: { strengths: [], improvements: ['Evaluation failed — please check connection'], suggestions: [] } });
     } finally {
@@ -170,7 +168,7 @@ export default function InterviewSession({ sessionData, interviewType, onBack, o
         setSessionFeedback(result);
         setShowFeedback(true);
         onComplete && onComplete(result);
-      } catch (e) {
+      } catch {
         console.error('Complete session failed', e);
         setShowFeedback(true);
       } finally {

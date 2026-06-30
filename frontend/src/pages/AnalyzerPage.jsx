@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect , useMemo} from "react";
 import { ResumeUpload } from '../components/ResumeUpload/ResumeUpload';
 import { formatFileSize } from '../utils/formatters';
 import { extractResumeInfo, classifySkills, getATSScore, getRecommendations, getSkillGapAnalysis, generateRoadmap } from '../services/api';
@@ -228,7 +228,7 @@ const isDevModeEnabled = () => {
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_DEV_MODE === 'true') {
       return true;
     }
-  } catch (e) {}
+  } catch { /* ignore */ }
   try {
     if (typeof window !== 'undefined') {
       if (window.localStorage && window.localStorage.getItem('dev_mode') === 'true') {
@@ -238,7 +238,7 @@ const isDevModeEnabled = () => {
         return true;
       }
     }
-  } catch (e) {}
+  } catch { /* ignore */ }
   return false;
 };
 
@@ -502,7 +502,7 @@ const AnalyzerPage = ({ initialTab }) => {
     setActiveTab('profile');
   };
 
-  const groupedSkills = React.useMemo(() => {
+  const groupedSkills = useMemo(() => {
     if (!enrichedSkills || enrichedSkills.length === 0) return {};
     
     const groups = {};
@@ -517,7 +517,7 @@ const AnalyzerPage = ({ initialTab }) => {
   }, [enrichedSkills]);
 
 
-  const processedData = React.useMemo(() => {
+  const processedData = useMemo(() => {
     if (!extractedData) return null;
     
     const extraSections = parseAdditionalSections(parsedData?.text_content);

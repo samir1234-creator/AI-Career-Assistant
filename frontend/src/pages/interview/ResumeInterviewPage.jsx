@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { startInterviewSession, getDashboardSummary } from '../../services/api';
 import InterviewSession from './InterviewSession';
 
@@ -23,7 +23,7 @@ export default function ResumeInterviewPage() {
           }
           setResumeData(parsed);
         }
-      } catch (e) { console.error('Failed to load resume', e); }
+      } catch { /* ignore */ }
       finally { setFetching(false); }
     })();
   }, []);

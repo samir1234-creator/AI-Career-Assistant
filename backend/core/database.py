@@ -31,6 +31,12 @@ def get_db_connection():
     pool = get_pool()
     conn = pool.getconn()
     try:
+        # Guarantee client encoding is UTF-8 to prevent CP1252/charmap errors on Windows
+        try:
+            conn.set_client_encoding('UTF8')
+        except Exception as enc_err:
+            print(f"Warning: Failed to set database connection encoding to UTF-8: {enc_err}")
+            
         yield conn
         conn.commit()
     except Exception as e:
@@ -222,7 +228,7 @@ def ensure_user_exists(
                     ON CONFLICT (user_id, badge_id) DO NOTHING;
                 """, (db_uuid, b_id, b_name, b_emoji, b_color, b_desc, b_cond))
 
-            print(f"[ensure_user_exists] Created new user: {email} → {db_uuid}")
+            print(f"[ensure_user_exists] Created new user: {email} -> {db_uuid}")
             return db_uuid
 
 

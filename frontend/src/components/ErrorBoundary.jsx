@@ -6,7 +6,7 @@ export class ErrorBoundary extends React.Component {
     this.state = { hasError: false, error: null };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error) { // eslint-disable-line no-unused-vars
     return { hasError: true, error };
   }
 
@@ -201,7 +201,7 @@ export class LocalErrorBoundary extends React.Component {
     super(props);
     this.state = { hasError: false };
   }
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error) { // eslint-disable-line no-unused-vars
     return { hasError: true };
   }
   componentDidCatch(error, errorInfo) {

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { getInterviewSessions, getInterviewSessionDetail } from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
 
 function scoreColor(v) {
   if (v >= 80) return '#10b981';
@@ -19,31 +20,35 @@ const TYPE_LABELS = {
 };
 
 export default function HistoryPage() {
+  const { user } = useAuth();
+  const isGuest = user?.email?.startsWith('guest_');
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSession, setSelectedSession] = useState(null);
   const [sessionDetail, setSessionDetail] = useState(null);
-  const [loadingDetail, setLoadingDetail] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (isGuest) {
+      setLoading(false);
+      return;
+    }
     (async () => {
       try {
         const data = await getInterviewSessions(20);
         setSessions(data || []);
-      } catch (e) { setError('Failed to load interview history.'); }
+      } catch { setError('Failed to load interview history.'); }
       finally { setLoading(false); }
     })();
-  }, []);
+  }, [isGuest]);
 
   const loadDetail = async (session) => {
     setSelectedSession(session);
-    setLoadingDetail(true);
-    try {
+        try {
       const detail = await getInterviewSessionDetail(session.id);
       setSessionDetail(detail);
-    } catch (e) { setSessionDetail(null); }
-    finally { setLoadingDetail(false); }
+    } catch { setSessionDetail(null); }
+    finally {  }
   };
 
   if (loading) return (
@@ -136,9 +141,17 @@ export default function HistoryPage() {
 
       {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '0.625rem', padding: '0.75rem', color: '#fca5a5', fontSize: '0.82rem', marginBottom: '1rem' }}>⚠️ {error}</div>}
 
-      {sessions.length === 0 ? (
-        <div style={{ background: 'var(--bg-card)', border: '2px dashed rgba(99,102,241,0.3)', borderRadius: '1rem', padding: '3rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📊</div>
+      {isGuest ? (
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '1rem', padding: '3rem 2rem', textAlign: 'center', maxWidth: '600px', margin: '2rem auto' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }} aria-hidden="true">👤</div>
+          <h3 style={{ color: '#e2e8f0', fontWeight: 700, marginBottom: '0.5rem' }}>Guest Mode Session</h3>
+          <p style={{ color: '#64748b', fontSize: '0.88rem', lineHeight: '1.6', margin: '0 auto 1.5rem auto', maxWidth: '400px' }}>
+            Interview session history is not saved in Guest Mode. Please log in with a standard account to save and track your session performance.
+          </p>
+        </div>
+      ) : sessions.length === 0 ? (
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '1rem', padding: '3rem 2rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '1rem' }} aria-hidden="true">📭</div>
           <h3 style={{ color: '#e2e8f0', fontWeight: 700, marginBottom: '0.5rem' }}>No Interview Sessions Yet</h3>
           <p style={{ color: '#64748b', fontSize: '0.85rem' }}>Complete your first interview to see your history and progress here.</p>
         </div>

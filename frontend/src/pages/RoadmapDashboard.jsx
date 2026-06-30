@@ -127,10 +127,8 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
   const [expandedMilestones, setExpandedMilestones] = useState({});
   const [milestoneProgress, setMilestoneProgress] = useState({});
   const [badgeTimestamps, setBadgeTimestamps] = useState({});
-  const [shareLoading, setShareLoading] = useState(false);
-  const [pdfLoading, setPdfLoading] = useState(false);
-  const [shareMsg, setShareMsg] = useState('');
-  
+    const [pdfLoading, setPdfLoading] = useState(false);
+    
   // SaaS live state
   const [loading, setLoading] = useState(!initialRoadmapData);
   const [liveRoadmap, setLiveRoadmap] = useState(initialRoadmapData);
@@ -180,8 +178,8 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
         const isComplete = completedIndices.includes(index) || m.complete;
         init[index] = isComplete ? STATUS.COMPLETED : STATUS.NOT_STARTED;
       });
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setMilestoneProgress(init);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setMilestoneProgress(init);
     }
   }, [liveRoadmap, apiProgress]);
 
@@ -227,8 +225,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
   // ── Computed metrics ────────────────────────────────────────────────────────
   const totalMilestones = (liveRoadmap?.milestones || []).filter(m => !m.title.toLowerCase().includes('ready')).length;
   const completedCount = Object.values(milestoneProgress).filter(s => s === STATUS.COMPLETED).length;
-  const inProgressCount = Object.values(milestoneProgress).filter(s => s === STATUS.IN_PROGRESS).length;
-  
+    
   // Use DB-recalculated completion percentages if available
   const completionPct = apiProgress 
     ? Math.round(apiProgress.current_roadmap_completion) 
@@ -239,8 +236,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
     ? apiProgress.current_readiness
     : (completionPct >= 100 ? (liveRoadmap?.expected_readiness || 0) : Math.min(99, Math.round(baseReadiness + (completionPct / 100) * ((liveRoadmap?.expected_readiness || 0) - baseReadiness))));
   
-  const skillAcqPct = Math.min(100, completionPct + Math.round(inProgressCount * (50 / Math.max(totalMilestones, 1))));
-
+  
   // Success Probability live calculation
   const demandLevel = jm?.demand_level || 'High';
   const demandLower = demandLevel.toLowerCase();
@@ -310,8 +306,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
   };
 
 
-  const unlockedBadges = BADGE_CATALOG.filter(badge => checkIsEarned(badge));
-
+  
   // ── Badge timestamps effect ──────────────────────────────────────────────────
   useEffect(() => {
     let changed = false;
@@ -327,8 +322,8 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
       }
     });
     if (changed) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setBadgeTimestamps(updated);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setBadgeTimestamps(updated);
       localStorage.setItem(BADGE_TIMESTAMPS_KEY(career), JSON.stringify(updated));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -494,21 +489,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
   const currentMonthPlan = (liveRoadmap?.monthly_roadmap || []).find(m => m.month_number === selectedMonth) || (liveRoadmap?.monthly_roadmap || [])[0];
 
   // ── Share roadmap ───────────────────────────────────────────────────────────
-  const handleShare = async () => {
-    setShareLoading(true);
-    setShareMsg('');
-    try {
-      const result = await shareRoadmap(liveRoadmap, candidateName || 'Candidate');
-      const fullUrl = `${window.location.origin}${window.location.pathname}#shared/${result.share_id}`;
-      await navigator.clipboard.writeText(fullUrl);
-      setShareMsg('✓ Link copied to clipboard!');
-    } catch {
-      setShareMsg('⚠ Failed to generate share link.');
-    } finally {
-      setShareLoading(false);
-      setTimeout(() => setShareMsg(''), 4000);
-    }
-  };
+  
 
   // ── Export PDF ──────────────────────────────────────────────────────────────
   const handleExportPDF = async () => {
@@ -669,7 +650,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
                 ← Back
               </button>
             </div>
-            {shareMsg && <div style={{ fontSize: '0.75rem', color: '#a7f3d0', fontWeight: '600' }}>{shareMsg}</div>}
+            {false && <div style={{ fontSize: '0.75rem', color: '#a7f3d0', fontWeight: '600' }}>{false}</div>}
           </div>
         </div>
       </div>

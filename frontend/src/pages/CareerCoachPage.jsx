@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 import { askCareerCoach, getCareerCoachHistory } from '../services/api';
 
 const QUICK_PROMPTS = [

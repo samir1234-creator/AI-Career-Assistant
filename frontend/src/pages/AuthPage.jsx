@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from "react";
 import { useAuth } from '../hooks/useAuth';
 import { LogoIcon } from '../components/ui/LogoIcon';
 
@@ -6,9 +6,7 @@ export const AuthPage = () => {
   const { signInWithGoogle, loginAsDeveloper } = useAuth();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [devEmail, setDevEmail] = useState('developer@career-assistant.ai');
-  const [showDevPanel, setShowDevPanel] = useState(false);
-
+    
   const handleGoogleLogin = async () => {
     setError('');
     setLoading(true);
@@ -21,24 +19,14 @@ export const AuthPage = () => {
     }
   };
 
-  const handleDevLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      await loginAsDeveloper(devEmail, 'SaaS Developer');
-    } catch {
-      setError('Developer bypass failed. Check console for details.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   const handleGuestLogin = async () => {
     setError('');
     setLoading(true);
     try {
-      await loginAsDeveloper('guest@career-assistant.ai', 'Guest User');
+      const guestId = Math.random().toString(36).substring(2, 10);
+      await loginAsDeveloper(`guest_${guestId}@ilmora.ai`, 'Guest User');
     } catch {
       setError('Guest mode login failed. Please try again.');
     } finally {

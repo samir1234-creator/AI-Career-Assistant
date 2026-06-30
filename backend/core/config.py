@@ -19,13 +19,13 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024 # 5 MB
 
     # Supabase Settings
-    SUPABASE_URL: str = "https://your-project.supabase.co"
-    SUPABASE_ANON_KEY: str = "your-anon-key"
-    SUPABASE_JWT_SECRET: str = "super_secret_fallback_key_1234567890!"
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/postgres"
+    SUPABASE_URL: str
+    SUPABASE_ANON_KEY: str
+    SUPABASE_JWT_SECRET: str
+    DATABASE_URL: str
 
     # Firebase Settings
-    FIREBASE_PROJECT_ID: str = "dummy-project"
+    FIREBASE_PROJECT_ID: str
 
     class Config:
         case_sensitive = True

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from '../hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LogoIcon } from '../components/ui/LogoIcon';
@@ -23,6 +23,7 @@ export const MainLayout = ({ children }) => {
 
   // Close mobile nav and dropdown on route change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
     setDropdownOpen(false);
   }, [location.pathname]);

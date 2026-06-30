@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { useAuth } from '../hooks/useAuth';
 import { getUserDashboard } from '../services/api';
-import StatCard from '../components/ui/StatCard';
-import ProgressBar from '../components/ui/ProgressBar';
 import { SkeletonCard } from '../components/ui/Skeleton';
 
 const ProfilePage = () => {
@@ -85,7 +83,7 @@ const ProfilePage = () => {
               {user?.name || 'SaaS Candidate'}
             </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '0.25rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <span>✉️ {user?.email}</span>
+              <span>✉️ {user?.email?.startsWith('guest_') ? 'Guest Account' : user?.email}</span>
               <span>•</span>
               <span>Joined {user?.joined_date ? new Date(user.joined_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'recently'}</span>
             </p>
@@ -327,10 +325,16 @@ const ProfilePage = () => {
                 <span style={{ color: 'var(--text-muted)' }}>Registration Status</span>
                 <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>✓ Authenticated</span>
               </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Account Type</span>
+                <span style={{ color: user?.email?.startsWith('guest_') ? '#f59e0b' : '#3b82f6', fontWeight: 'bold' }}>
+                  {user?.email?.startsWith('guest_') ? 'Guest Account' : 'Standard Account'}
+                </span>
+              </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Environment Mode</span>
-                <span style={{ color: user?.id?.startsWith('sim_') ? '#fbbf24' : '#60a5fa', fontWeight: 'bold' }}>
-                  {user?.id?.startsWith('sim_') ? 'Simulation Mode' : 'Production Sync'}
+                <span style={{ color: user?.email?.startsWith('guest_') ? '#f59e0b' : (user?.id?.startsWith('sim_') ? '#fbbf24' : '#60a5fa'), fontWeight: 'bold' }}>
+                  {user?.email?.startsWith('guest_') ? 'Guest Session' : (user?.id?.startsWith('sim_') ? 'Simulation Mode' : 'Production Sync')}
                 </span>
               </div>
             </div>

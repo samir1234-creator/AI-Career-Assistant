@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from '../hooks/useAuth';
 import { getDashboardSummary } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { LocalErrorBoundary } from '../components/ErrorBoundary';
 import StatCard from '../components/ui/StatCard';
-import ProgressBar from '../components/ui/ProgressBar';
 import { SkeletonStatGrid, SkeletonCard } from '../components/ui/Skeleton';
 
 /* ── Dashboard skeleton while loading ── */
@@ -20,55 +19,6 @@ function DashboardSkeleton() {
     </div>
   );
 }
-
-/* ── Activity item ── */
-function ActivityItem({ activity, index }) {
-  const icons = {
-    resume_upload: '📄',
-    ats_score: '🎯',
-    interview_completed: '🎤',
-    milestone_completed: '🏆',
-    roadmap_created: '🗺️',
-  };
-  const icon = icons[activity.type] || '⭐';
-  const timeAgo = activity.created_at
-    ? new Date(activity.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    : 'Recently';
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 'var(--space-3)',
-        paddingBottom: 'var(--space-4)',
-        borderBottom: '1px solid var(--border-subtle)',
-        animation: `fadeSlideUp ${0.2 + index * 0.05}s ease both`,
-      }}
-    >
-      <div style={{
-        width: 34,
-        height: 34,
-        background: 'var(--primary-light)',
-        borderRadius: 'var(--radius-md)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '0.95rem',
-        flexShrink: 0,
-      }} aria-hidden="true">
-        {icon}
-      </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', fontWeight: 500 }}>
-          {activity.description || activity.type?.replace(/_/g, ' ')}
-        </div>
-        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-subtle)', marginTop: 2 }}>{timeAgo}</div>
-      </div>
-    </div>
-  );
-}
-
 /* ── Quick action card ── */
 function QuickActionCard({ icon, title, desc, onClick, accentColor = '#06b6d4' }) {
   return (
@@ -130,6 +80,7 @@ export const Dashboard = () => {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
 
   const stats = summary ? {
@@ -196,12 +147,14 @@ export const Dashboard = () => {
               margin: 0,
               letterSpacing: '-0.02em',
             }}>
-              {stats?.has_active_roadmap
-                ? `Welcome back, ${user?.name?.split(' ')[0] || 'Candidate'}! 👋`
-                : 'Welcome to Ilmora'}
+              {user?.email?.startsWith('guest_')
+                ? 'Welcome to Ilmora (Guest Mode) 👤'
+                : (stats?.has_active_roadmap
+                  ? `Welcome back, ${user?.name?.split(' ')[0] || 'Candidate'}! 👋`
+                  : 'Welcome to Ilmora')}
             </h1>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)', marginTop: 'var(--space-2)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-              <span>✉️ {user?.email}</span>
+              <span>✉️ {user?.email?.startsWith('guest_') ? 'Guest Account' : user?.email}</span>
               {stats?.career_goal && (
                 <>
                   <span>•</span>
@@ -271,7 +224,7 @@ export const Dashboard = () => {
               🛠️ Platform Tools
             </h2>
             <div className="quick-actions-grid">
-              {quickActions.map((action, i) => (
+              {quickActions.map((action) => (
                 <QuickActionCard
                   key={action.path}
                   icon={action.icon}

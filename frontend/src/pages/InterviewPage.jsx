@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import { getInterviewStats, getInterviewBadges } from '../services/api';
 
@@ -188,9 +188,7 @@ export default function InterviewPage() {
     })();
   }, []);
 
-  const isHub = location.pathname === '/interview';
-  const activeTab = NAV_TABS.find(t => t.path === location.pathname) || NAV_TABS[0];
-
+    
   return (
     <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
       <style>{`

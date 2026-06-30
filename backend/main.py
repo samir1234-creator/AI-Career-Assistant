@@ -1,3 +1,12 @@
+import sys
+# Reconfigure standard streams to use UTF-8 to prevent 'charmap' / UnicodeEncodeError on Windows
+for stream in (sys.stdout, sys.stderr):
+    if stream and hasattr(stream, 'reconfigure'):
+        try:
+            stream.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
+
 import uvicorn
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware

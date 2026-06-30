@@ -56,7 +56,6 @@ export const ensureUserInitialized = async (token, uid) => {
     if (response.data?.success && response.data?.data) {
       _cachedUserId = uid;
       _cachedProfile = response.data.data;
-      console.log('[UserInitService] User initialized successfully:', _cachedProfile.email);
       return _cachedProfile;
     }
   } catch (error) {

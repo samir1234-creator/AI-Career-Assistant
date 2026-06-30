@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useEffect } from 'react';
+import { Suspense, lazy, useState, useEffect } from "react";
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LogoIcon } from './components/ui/LogoIcon';
 import { useAuth } from './hooks/useAuth';
