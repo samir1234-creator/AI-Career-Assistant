@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { getUserDashboard } from '../services/api';
+import StatCard from '../components/ui/StatCard';
+import ProgressBar from '../components/ui/ProgressBar';
+import { SkeletonCard } from '../components/ui/Skeleton';
 
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
@@ -14,22 +17,23 @@ const ProfilePage = () => {
         setLoading(true);
         const dashboardStats = await getUserDashboard();
         setStats(dashboardStats);
-      } catch (err) {
-        console.error("Failed to load profile stats:", err);
+      } catch {
         setError('Could not retrieve complete profile analytics.');
       } finally {
         setLoading(false);
       }
     };
-
     fetchProfileStats();
   }, []);
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '6rem 2rem' }}>
-        <div className="spinner"></div>
-        <p style={{ color: 'var(--text-muted)', fontWeight: '500', marginTop: '1rem' }}>Loading profile details...</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', maxWidth: '1000px', margin: '0 auto', padding: '0 var(--space-4)' }}>
+        <SkeletonCard height={140} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+          {[1,2,3,4].map(i => <SkeletonCard key={i} height={110} />)}
+        </div>
+        <SkeletonCard height={200} />
       </div>
     );
   }
@@ -93,23 +97,7 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        <button
-          onClick={signOut}
-          style={{
-            backgroundColor: 'transparent',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            color: '#f87171',
-            borderRadius: '8px',
-            padding: '0.6rem 1.25rem',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: '700',
-            transition: 'all 0.2s ease',
-            outline: 'none'
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.borderColor = '#ef4444'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)'; }}
-        >
+        <button onClick={signOut} className="btn btn-danger btn-sm" aria-label="Sign out">
           Sign Out
         </button>
       </div>
@@ -247,7 +235,7 @@ const ProfilePage = () => {
         {/* Right Column - Achievements & Account Settings */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
-          {/* Achievements Catalog */}
+          {/* Skill Gap Priorities */}
           <div style={{
             backgroundColor: 'var(--bg-card)',
             borderRadius: '16px',
@@ -256,36 +244,63 @@ const ProfilePage = () => {
             boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
           }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '1.5rem', color: '#fff', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', fontFamily: "'Outfit', sans-serif" }}>
-              🏆 Earned Milestones
+              🎯 Skill Gap Priorities
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-              {stats?.achievements && stats.achievements.length > 0 ? (
-                stats.achievements.map((item, idx) => (
-                  <div 
-                    key={idx}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      backgroundColor: 'rgba(255,255,255,0.01)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: '8px',
-                      padding: '0.75rem 1rem'
-                    }}
-                  >
-                    <span style={{ fontSize: '1.25rem' }}>🏆</span>
-                    <div style={{ textAlign: 'left' }}>
-                      <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-light)' }}>{item.name}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                        {new Date(item.unlocked_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+              {stats?.remaining_skills && stats.remaining_skills.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5', textAlign: 'left' }}>
+                    Based on your target career goal of <strong>{stats.career_goal || 'Candidate'}</strong>, master these high-priority skills next:
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.25rem' }}>
+                    {stats.remaining_skills.slice(0, 10).map((skill, idx) => (
+                      <span 
+                        key={idx}
+                        style={{ 
+                          fontSize: '0.72rem', 
+                          fontWeight: '600',
+                          backgroundColor: 'rgba(245, 158, 11, 0.08)', 
+                          border: '1px solid rgba(245, 158, 11, 0.2)', 
+                          color: '#fbbf24',
+                          padding: '0.25rem 0.65rem', 
+                          borderRadius: '20px'
+                        }}
+                      >
+                        ⚠️ {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5', textAlign: 'left' }}>
+                    No remaining skill gaps detected. Focus on reinforcing your interview preparedness:
+                  </p>
+                  {[
+                    { title: 'Mock Interview Prep', desc: 'Complete behavioral & technical mock evaluations.', icon: '🎤' },
+                    { title: 'Resume Check', desc: 'Upload updated resumes to optimize ATS compatibility.', icon: '📄' },
+                    { title: 'Portfolio Projects', desc: 'Build showcase projects using your acquired skills.', icon: '🛠️' }
+                  ].map((item, idx) => (
+                    <div 
+                      key={idx}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        backgroundColor: 'rgba(255,255,255,0.01)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '8px',
+                        padding: '0.75rem 1rem'
+                      }}
+                    >
+                      <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
+                      <div style={{ textAlign: 'left' }}>
+                        <div style={{ fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-light)' }}>{item.title}</div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{item.desc}</div>
                       </div>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <div style={{ textAlign: 'center', padding: '1.5rem 0', color: 'var(--text-muted)', fontSize: '0.88rem', fontStyle: 'italic' }}>
-                  Complete curriculum sections or milestone evaluations to earn trophies!
+                  ))}
                 </div>
               )}
             </div>

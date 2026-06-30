@@ -4,7 +4,7 @@ load_dotenv()
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "AI Career Assistant"
+    PROJECT_NAME: str = "Ilmora"
     API_V1_STR: str = "/api/v1"
     
     # CORS Origins

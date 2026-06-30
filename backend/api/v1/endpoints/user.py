@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Header, Depends, HTTPException
+from fastapi import APIRouter, Header, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
@@ -377,10 +377,17 @@ async def update_task_status(payload: TaskUpdateRequest, current_user: Dict[str,
     )
 
 @router.get("/dashboard", response_model=BaseResponse[Dict[str, Any]])
-async def get_dashboard(current_user: Dict[str, Any] = Depends(get_current_user)):
+async def get_dashboard(
+    response: Response,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
     """
     Aggregates statistics for the user dashboard.
+    Data is safe to cache privately for 30 s; stale-while-revalidate allows
+    background refresh for up to 60 s after expiry.
     """
+    # Override the global no-store default set by the security-headers middleware
+    response.headers["Cache-Control"] = "private, max-age=30, stale-while-revalidate=60"
     user_id = current_user["id"]
     roadmap = get_active_roadmap_for_user(user_id)
     badges = get_user_badges(user_id)
@@ -497,11 +504,18 @@ async def get_dashboard(current_user: Dict[str, Any] = Depends(get_current_user)
     )
 
 @router.get("/dashboard/summary", response_model=BaseResponse[Dict[str, Any]])
-async def get_dashboard_summary_endpoint(current_user: Dict[str, Any] = Depends(get_current_user)):
+async def get_dashboard_summary_endpoint(
+    response: Response,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
     """
     Aggregates all user, profile, active roadmap, progress, analytics, badges,
     achievements, and resume history details in a single, high-performance request.
+    Data is safe to cache privately for 30 s; stale-while-revalidate allows
+    background refresh for up to 60 s after expiry.
     """
+    # Override the global no-store default set by the security-headers middleware
+    response.headers["Cache-Control"] = "private, max-age=30, stale-while-revalidate=60"
     try:
         user_id = current_user["id"]
         summary = get_dashboard_summary(user_id)

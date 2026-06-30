@@ -1,98 +1,219 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { getDashboardSummary } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { LocalErrorBoundary } from '../components/ErrorBoundary';
+import StatCard from '../components/ui/StatCard';
+import ProgressBar from '../components/ui/ProgressBar';
+import { SkeletonStatGrid, SkeletonCard } from '../components/ui/Skeleton';
 
+/* ── Dashboard skeleton while loading ── */
+function DashboardSkeleton() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <SkeletonCard height={120} />
+      <SkeletonStatGrid count={4} />
+      <SkeletonCard height={200} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+        {[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} height={90} />)}
+      </div>
+    </div>
+  );
+}
+
+/* ── Activity item ── */
+function ActivityItem({ activity, index }) {
+  const icons = {
+    resume_upload: '📄',
+    ats_score: '🎯',
+    interview_completed: '🎤',
+    milestone_completed: '🏆',
+    roadmap_created: '🗺️',
+  };
+  const icon = icons[activity.type] || '⭐';
+  const timeAgo = activity.created_at
+    ? new Date(activity.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : 'Recently';
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 'var(--space-3)',
+        paddingBottom: 'var(--space-4)',
+        borderBottom: '1px solid var(--border-subtle)',
+        animation: `fadeSlideUp ${0.2 + index * 0.05}s ease both`,
+      }}
+    >
+      <div style={{
+        width: 34,
+        height: 34,
+        background: 'var(--primary-light)',
+        borderRadius: 'var(--radius-md)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '0.95rem',
+        flexShrink: 0,
+      }} aria-hidden="true">
+        {icon}
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', fontWeight: 500 }}>
+          {activity.description || activity.type?.replace(/_/g, ' ')}
+        </div>
+        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-subtle)', marginTop: 2 }}>{timeAgo}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Quick action card ── */
+function QuickActionCard({ icon, title, desc, onClick, accentColor = '#06b6d4' }) {
+  return (
+    <div
+      className="quick-action-card"
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && onClick()}
+      aria-label={title}
+      style={{ borderLeft: `3px solid ${accentColor}18` }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderLeftColor = accentColor;
+        e.currentTarget.style.borderLeftWidth = '3px';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderLeftColor = `${accentColor}18`;
+      }}
+    >
+      <div style={{
+        width: 44,
+        height: 44,
+        background: `${accentColor}18`,
+        borderRadius: 'var(--radius-lg)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '1.25rem',
+        flexShrink: 0,
+        transition: 'all var(--transition-base)',
+      }} aria-hidden="true">
+        {icon}
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 2 }}>{title}</div>
+        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 'var(--leading-relaxed)' }}>{desc}</div>
+      </div>
+      <span style={{ color: 'var(--text-subtle)', fontSize: 'var(--text-xs)' }} aria-hidden="true">→</span>
+    </div>
+  );
+}
+
+/* ── Main Dashboard ─────────────────────────────────────────── */
 export const Dashboard = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const data = await getDashboardSummary();
-        setSummary(data);
-      } catch (err) {
-        console.error("Dashboard load failed:", err);
-        // Do NOT set a blocking error — show onboarding state instead
-        // so new users (whose DB row may not exist yet) get a clean welcome screen.
-        setError('Failed to load dashboard.');
-        setSummary(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
+  const fetchDashboard = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getDashboardSummary();
+      setSummary(data);
+    } catch {
+      setSummary(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
 
   const stats = summary ? {
-    has_active_roadmap: summary.has_active_roadmap,
-    current_readiness: summary.readiness.current_readiness,
-    projected_readiness: summary.readiness.projected_readiness,
-    roadmap_progress: summary.progress.roadmap_progress,
-    completed_tasks: summary.progress.completed_tasks,
-    remaining_tasks: summary.progress.remaining_tasks,
-    completed_skills: summary.progress.completed_skills,
-    remaining_skills: summary.progress.remaining_skills,
-    achievements: summary.achievements,
-    badges: summary.badges,
-    estimated_job_ready_date: summary.readiness.estimated_job_ready_date,
-    recent_activity: summary.recent_activity,
-    success_probability: summary.readiness.success_probability,
-    career_goal: summary.profile.current_career_goal || summary.roadmap?.career
+    has_active_roadmap:    summary.has_active_roadmap,
+    current_readiness:     summary.readiness?.current_readiness ?? 0,
+    projected_readiness:   summary.readiness?.projected_readiness ?? 0,
+    roadmap_progress:      summary.progress?.roadmap_progress ?? 0,
+    completed_tasks:       summary.progress?.completed_tasks ?? 0,
+    remaining_tasks:       summary.progress?.remaining_tasks ?? 0,
+    completed_skills:      summary.progress?.completed_skills ?? 0,
+    achievements:          summary.achievements || [],
+    badges:                summary.badges || [],
+    estimated_job_ready_date: summary.readiness?.estimated_job_ready_date,
+    recent_activity:       summary.recent_activity || [],
+    success_probability:   summary.readiness?.success_probability ?? 0,
+    career_goal:           summary.profile?.current_career_goal || summary.roadmap?.career,
+    ats_score:             summary.ats_score ?? null,
   } : null;
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '6rem 2rem' }}>
-        <div className="spinner"></div>
-        <p style={{ color: 'var(--text-muted)', fontWeight: '500' }}>Loading your SaaS career workspace...</p>
-      </div>
-    );
-  }
+  const quickActions = [
+    { icon: '📄', title: 'Resume Analyzer',    desc: 'Upload and score your resume against ATS systems',    path: '/analyzer',     color: '#06b6d4' },
+    { icon: '🎯', title: 'ATS Score Check',     desc: 'Measure compatibility with job descriptions',         path: '/ats',          color: '#06b6d4' },
+    { icon: '🗺️', title: 'Learning Roadmap',    desc: 'Follow your personalized skill-building curriculum',  path: '/roadmap',      color: '#10b981' },
+    { icon: '🎤', title: 'Interview Practice',  desc: 'Prepare with AI-driven mock interview sessions',      path: '/interview',    color: '#f59e0b' },
+    { icon: '🤖', title: 'AI Career Coach',     desc: 'Get personalized guidance from your AI assistant',    path: '/career-coach', color: '#10b981' },
+    { icon: '👤', title: 'My Profile',          desc: 'View your career metrics, badges, and achievements',  path: '/profile',      color: '#ef4444' },
+  ];
+
+  if (loading) return <DashboardSkeleton />;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', animation: 'fadeIn 0.3s ease' }}>
-      
-      {/* 1. Profile Welcome Card */}
-      <div style={{
-        backgroundColor: 'var(--bg-card)',
-        borderRadius: '12px',
-        border: '1px solid var(--border-color)',
-        padding: '2rem',
-        background: 'linear-gradient(135deg, rgba(99,102,241,0.05) 0%, var(--bg-card) 60%)',
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '1.5rem'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
-          <img 
-            src={user?.picture || "https://lh3.googleusercontent.com/a/default-user"} 
-            alt="Avatar" 
-            style={{ width: '70px', height: '70px', borderRadius: '50%', border: '2px solid var(--primary)', boxShadow: '0 4px 12px rgba(99,102,241,0.3)' }}
-          />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeIn 0.3s ease' }}>
+
+      {/* ── Welcome Hero ── */}
+      <div className="dashboard-hero">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-5)', flexWrap: 'wrap' }}>
+          {user?.picture ? (
+            <img
+              src={user.picture}
+              alt={user.name || 'User avatar'}
+              style={{
+                width: 70, height: 70, borderRadius: '50%',
+                border: '2px solid var(--primary)',
+                boxShadow: '0 0 20px var(--primary-glow)',
+              }}
+            />
+          ) : (
+            <div style={{
+              width: 70, height: 70, borderRadius: '50%',
+              background: 'var(--gradient-primary)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.75rem', fontWeight: 800, color: '#fff',
+              boxShadow: '0 0 20px var(--primary-glow)',
+            }}>
+              {(user?.name?.[0] || '?').toUpperCase()}
+            </div>
+          )}
           <div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: '#fff', margin: 0, fontFamily: "'Outfit', sans-serif" }}>
-              {(!stats?.has_active_roadmap) ? "Welcome to AI Career Assistant" : `Welcome back, ${user?.name || 'Candidate'}!`}
-            </h2>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.35rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            <h1 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(1.4rem, 3vw, 1.9rem)',
+              fontWeight: 800,
+              color: 'var(--text-primary)',
+              margin: 0,
+              letterSpacing: '-0.02em',
+            }}>
+              {stats?.has_active_roadmap
+                ? `Welcome back, ${user?.name?.split(' ')[0] || 'Candidate'}! 👋`
+                : 'Welcome to Ilmora'}
+            </h1>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)', marginTop: 'var(--space-2)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
               <span>✉️ {user?.email}</span>
-              <span>•</span>
-              <span>Joined {user?.joined_date ? new Date(user.joined_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'recently'}</span>
               {stats?.career_goal && (
                 <>
                   <span>•</span>
-                  <span style={{ color: '#a5b4fc', fontWeight: '600' }}>Target: {stats.career_goal}</span>
+                  <span className="badge badge-primary">🎯 {stats.career_goal}</span>
+                </>
+              )}
+              {stats?.estimated_job_ready_date && (
+                <>
+                  <span>•</span>
+                  <span style={{ color: '#6ee7b7' }}>
+                    Ready: {new Date(stats.estimated_job_ready_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  </span>
                 </>
               )}
             </div>
@@ -100,206 +221,144 @@ export const Dashboard = () => {
         </div>
         <button
           onClick={signOut}
-          style={{
-            backgroundColor: 'transparent',
-            border: '1px solid var(--border-color)',
-            color: 'var(--text-muted)',
-            borderRadius: '6px',
-            padding: '0.5rem 1rem',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            fontWeight: '600',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => { e.target.style.color = 'var(--error)'; e.target.style.borderColor = 'rgba(239,68,68,0.4)'; }}
-          onMouseLeave={(e) => { e.target.style.color = 'var(--text-muted)'; e.target.style.borderColor = 'var(--border-color)'; }}
+          className="btn btn-ghost btn-sm"
+          aria-label="Sign out"
         >
           Sign Out
         </button>
       </div>
 
-
-      {/* 2. STATS GRID */}
+      {/* ── Stats Grid (only when roadmap active) ── */}
       {stats?.has_active_roadmap && (
-        <LocalErrorBoundary fallbackText="Readiness analytics currently unavailable.">
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
-            
-            {/* STAT 1: Career Readiness */}
-            <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '1.25rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-              <span style={{ fontSize: '1.5rem' }}>🚀</span>
-              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Readiness Score</span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
-                <span style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--success)' }}>{stats.current_readiness}%</span>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>/ {stats.projected_readiness}% target</span>
-              </div>
-              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Updated via active study curriculum</span>
-            </div>
-
-            {/* STAT 2: Success Probability */}
-            <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-              <span style={{ fontSize: '1.5rem' }}>🔥</span>
-              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Success Probability</span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
-                <span style={{ fontSize: '1.8rem', fontWeight: '800', color: '#f59e0b' }}>{stats.success_probability}%</span>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>job probability</span>
-              </div>
-              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Based on current market demand trends</span>
-            </div>
-
+        <LocalErrorBoundary fallbackText="Analytics temporarily unavailable.">
+          <div className="dashboard-stats-grid">
+            <StatCard
+              icon="🚀"
+              label="Career Readiness"
+              value={`${stats.current_readiness}%`}
+              subtext={`Target: ${stats.projected_readiness}%`}
+              progress={stats.current_readiness}
+              accentColor="#10b981"
+            />
+            <StatCard
+              icon="🔥"
+              label="Success Probability"
+              value={`${stats.success_probability}%`}
+              subtext="Based on market demand trends"
+              progress={stats.success_probability}
+              accentColor="#f59e0b"
+            />
+            {stats.ats_score != null && (
+              <StatCard
+                icon="🎯"
+                label="Last ATS Score"
+                value={`${stats.ats_score}%`}
+                subtext="Resume ATS compatibility"
+                progress={stats.ats_score}
+                accentColor="#06b6d4"
+              />
+            )}
           </div>
         </LocalErrorBoundary>
       )}
 
-      {/* 3. ACTIVE CURRICULUM SECTION OR CALL TO ACTION */}
-      <LocalErrorBoundary fallbackText="Active syllabus progression currently unavailable.">
-        <div style={{
-          backgroundColor: 'var(--bg-card)',
-          borderRadius: '12px',
-          border: '1px solid var(--border-color)',
-          padding: '2rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1.25rem'
-        }}>
-          {stats?.has_active_roadmap ? (
-            <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
-                <div>
-                  <span style={{ fontSize: '0.75rem', color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: '700' }}>Career Resources</span>
-                  <h3 style={{ fontSize: '1.35rem', fontWeight: '700', color: '#fff', margin: '0.2rem 0 0', fontFamily: "'Outfit', sans-serif" }}>
-                    💡 Career Strategy &amp; Resume Optimization
-                  </h3>
-                </div>
-                <div style={{
-                  backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                  border: '1px solid rgba(99, 102, 241, 0.2)',
-                  borderRadius: '20px',
-                  padding: '0.35rem 0.85rem',
-                  fontSize: '0.82rem',
-                  color: '#a5b4fc',
-                  fontWeight: '700'
-                }}>
-                  🎯 Target Role: {stats?.career_goal}
-                </div>
-              </div>
-
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginTop: '0.5rem' }}>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px' }}>
-                  <h4 style={{ fontSize: '0.82rem', color: '#60a5fa', marginBottom: '0.5rem', fontWeight: '700' }}>📄 ATS Formatting</h4>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: '1.4', margin: 0 }}>
-                    Keep formatting clean: use standard fonts, consistent margins, and single-column layout. Avoid embedding text inside images.
-                  </p>
-                </div>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px' }}>
-                  <h4 style={{ fontSize: '0.82rem', color: '#34d399', marginBottom: '0.5rem', fontWeight: '700' }}>🎯 Keyword Alignment</h4>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: '1.4', margin: 0 }}>
-                    Align technical terms directly with job descriptions. This helps parsing crawlers map your experience to the target role.
-                  </p>
-                </div>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px' }}>
-                  <h4 style={{ fontSize: '0.82rem', color: '#a78bfa', marginBottom: '0.5rem', fontWeight: '700' }}>📈 Quantify Results</h4>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: '1.4', margin: 0 }}>
-                    Show impact using metrics (e.g. "reduced latency by 30%"). Highlight specific business values rather than listing plain responsibilities.
-                  </p>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-              <h3 style={{ fontSize: '1.35rem', color: '#fff', marginBottom: '0.5rem' }}>
-                Welcome to AI Career Assistant
-              </h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.25rem', maxWidth: '500px', margin: '0 auto 1.25rem' }}>
-                Upload your PDF resume to check your ATS compatibility score, extract structured achievements, and build a dependency-aware career roadmap.
-              </p>
-              <button
-                onClick={() => navigate('/analyzer')}
-                style={{
-                  backgroundColor: 'var(--primary)',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: '0.65rem 1.5rem',
-                  color: '#fff',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--primary-hover)'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--primary)'}
-              >
-                🚀 Upload Resume &amp; Start Analysis
-              </button>
+      {/* ── Main content: Quick Actions ── */}
+      <div>
+        {/* Quick Actions */}
+        <LocalErrorBoundary fallbackText="Navigation tools temporarily unavailable.">
+          <div className="card" style={{ padding: 'var(--space-6)' }}>
+            <h2 className="section-title" style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-5)' }}>
+              🛠️ Platform Tools
+            </h2>
+            <div className="quick-actions-grid">
+              {quickActions.map((action, i) => (
+                <QuickActionCard
+                  key={action.path}
+                  icon={action.icon}
+                  title={action.title}
+                  desc={action.desc}
+                  onClick={() => navigate(action.path)}
+                  accentColor={action.color}
+                />
+              ))}
             </div>
-          )}
-        </div>
-      </LocalErrorBoundary>
 
-
-      {/* 4. MAIN LAYOUT GRID (QUICK TOOLS ONLY) */}
-      <div style={{ width: '100%' }}>
-
-        
-        {/* QUICK TOOLS & NAVIGATION */}
-        <LocalErrorBoundary fallbackText="System tools currently unavailable.">
-          <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-color)', padding: '1.75rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#fff', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', fontFamily: "'Outfit', sans-serif" }}>
-              🛠️ Professional Platform Tools
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div 
-                onClick={() => navigate('/analyzer')}
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.01)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  padding: '0.85rem 1.1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'; e.currentTarget.style.backgroundColor = 'rgba(99,102,241,0.02)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.01)'; }}
-              >
-                <span style={{ fontSize: '1.5rem' }}>📄</span>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ color: '#fff', fontWeight: '700', fontSize: '0.9rem' }}>ATS Resume Analyzer</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.15rem' }}>Upload your resume to check compatibility and receive parsing feedback.</div>
-                </div>
+            {/* Onboarding CTA for new users */}
+            {!stats?.has_active_roadmap && (
+              <div style={{
+                marginTop: 'var(--space-6)',
+                padding: 'var(--space-6)',
+                background: 'linear-gradient(135deg, rgba(6,182,212,0.08), rgba(16,185,129,0.04))',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-accent)',
+                textAlign: 'center',
+              }}>
+                <div style={{ fontSize: '2rem', marginBottom: 'var(--space-3)' }} aria-hidden="true">📄</div>
+                <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: 'var(--space-2)' }}>
+                  Start Your Career Journey
+                </h3>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-4)', lineHeight: 'var(--leading-relaxed)' }}>
+                  Upload your resume to get an ATS score, identify skill gaps, and generate a personalized learning roadmap.
+                </p>
+                <button
+                  onClick={() => navigate('/analyzer')}
+                  className="btn btn-primary btn-md"
+                >
+                  🚀 Upload Resume &amp; Start Analysis
+                </button>
               </div>
+            )}
+          </div>
+        </LocalErrorBoundary>
+      </div>
 
-              <div 
-                onClick={() => navigate('/profile')}
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.01)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  padding: '0.85rem 1.1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'; e.currentTarget.style.backgroundColor = 'rgba(99,102,241,0.02)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.01)'; }}
-              >
-                <span style={{ fontSize: '1.5rem' }}>👤</span>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ color: '#fff', fontWeight: '700', fontSize: '0.9rem' }}>Candidate Profile &amp; Stats</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.15rem' }}>View target metrics, readiness score, and account configuration details.</div>
+      {/* ── Career Tips (when roadmap active) ── */}
+      {stats?.has_active_roadmap && (
+        <LocalErrorBoundary fallbackText="Career tips unavailable.">
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-5)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+              <div>
+                <div style={{ fontSize: 'var(--text-xs)', color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>
+                  Career Intelligence
                 </div>
+                <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 700, margin: '0.2rem 0 0', fontFamily: 'var(--font-display)' }}>
+                  💡 Resume Optimization Tips
+                </h2>
               </div>
+              {stats?.career_goal && (
+                <span className="badge badge-primary" style={{ fontSize: 'var(--text-xs)' }}>
+                  🎯 Target: {stats.career_goal}
+                </span>
+              )}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+              {[
+                { color: '#60a5fa', icon: '📄', title: 'ATS Formatting', tip: 'Use standard fonts, consistent margins, and single-column layout. Avoid text inside images.' },
+                { color: '#34d399', icon: '🎯', title: 'Keyword Alignment', tip: 'Mirror technical terms from job descriptions. This helps ATS parsers map your skills directly.' },
+                { color: '#a78bfa', icon: '📈', title: 'Quantify Results', tip: 'Show impact with metrics (e.g. "reduced latency by 30%"). Highlight business value over responsibilities.' },
+              ].map((tip, i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: 'rgba(255,255,255,0.01)',
+                    border: `1px solid ${tip.color}20`,
+                    borderRadius: 'var(--radius-md)',
+                    padding: 'var(--space-4)',
+                    borderLeft: `3px solid ${tip.color}`,
+                  }}
+                >
+                  <h4 style={{ fontSize: 'var(--text-sm)', color: tip.color, marginBottom: 'var(--space-2)', fontWeight: 700 }}>
+                    {tip.icon} {tip.title}
+                  </h4>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 'var(--leading-relaxed)', margin: 0 }}>
+                    {tip.tip}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </LocalErrorBoundary>
-
-      </div>
-
+      )}
 
     </div>
   );

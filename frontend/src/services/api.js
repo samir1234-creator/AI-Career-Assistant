@@ -182,7 +182,6 @@ export const getDashboardSummary = async (forceRefresh = false) => {
   
   // Cache Hit - staleTime (15s), cacheTime (30s)
   if (!forceRefresh && dashboardSummaryCache && (now - dashboardSummaryTime) < 30000) {
-    console.log("[API Cache] Returning cached dashboard summary.");
     return dashboardSummaryCache;
   }
   
@@ -202,7 +201,6 @@ export const prefetchDashboardSummary = () => {
   const now = Date.now();
   // Fetch in background if cache is empty or older than staleTime (15s)
   if (!dashboardSummaryCache || (now - dashboardSummaryTime) > 15000) {
-    console.log("[API Cache] Prefetching dashboard summary in background...");
     axios.get(`${CONFIG.API_URL}/user/dashboard/summary`).then(response => {
       if (response.data?.success) {
         dashboardSummaryCache = response.data.data;

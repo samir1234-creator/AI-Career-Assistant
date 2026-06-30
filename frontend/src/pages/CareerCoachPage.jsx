@@ -75,7 +75,7 @@ You can ask me anything about your career — from what to learn next, to how to
             time: new Date().toISOString()
           }]);
         }
-      } catch (e) {
+      } catch {
         setMessages([{ role: 'coach', content: 'Hello! I\'m your AI Career Coach. Ask me anything about your career journey! 🚀', time: new Date().toISOString() }]);
       } finally {
         setFetchingHistory(false);
@@ -97,7 +97,7 @@ You can ask me anything about your career — from what to learn next, to how to
       const result = await askCareerCoach(msg);
       setMessages(prev => [...prev, { role: 'coach', content: result.response, time: result.timestamp }]);
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'coach', content: `I'm having trouble connecting right now. Please try again in a moment. Error: ${e.message}`, time: new Date().toISOString() }]);
+      setMessages(prev => [...prev, { role: 'coach', content: `I'm having trouble connecting right now. Please try again. Error: ${e.message}`, time: new Date().toISOString() }]);
     } finally {
       setLoading(false);
       setTimeout(() => inputRef.current?.focus(), 100);
@@ -105,8 +105,7 @@ You can ask me anything about your career — from what to learn next, to how to
   };
 
   return (
-    <div className="container" style={{ maxWidth: '900px', margin: '0 auto', padding: '0 1rem' }}>
-      <style>{`@keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
+    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -123,19 +122,20 @@ You can ask me anything about your career — from what to learn next, to how to
 
       {/* Quick prompts */}
       {messages.length <= 1 && (
-        <div style={{ marginBottom: '1rem' }}>
-          <p style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.625rem' }}>Quick Questions</p>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div style={{ marginBottom: 'var(--space-4)' }}>
+          <p style={{ color: 'var(--text-subtle)', fontSize: 'var(--text-xs)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 'var(--space-2)' }}>Quick Questions</p>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
             {QUICK_PROMPTS.map((p, i) => (
               <button key={i} id={`quick-prompt-${i}`}
                 onClick={() => sendMessage(p.text)}
                 disabled={loading}
-                style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: '9999px', padding: '0.375rem 0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', transition: 'all 0.2s ease' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.15)'; e.currentTarget.style.borderColor = '#6366f1'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.15)'; }}
+                className="badge badge-primary"
+                style={{ cursor: 'pointer', padding: '0.4rem 0.875rem', fontSize: 'var(--text-xs)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', transition: 'all var(--transition-fast)', background: 'none', border: '1px solid rgba(99,102,241,0.2)' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--primary-light)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}
               >
-                <span style={{ fontSize: '0.85rem' }}>{p.icon}</span>
-                <span style={{ color: '#a5b4fc', fontSize: '0.78rem', fontWeight: 500 }}>{p.text}</span>
+                <span aria-hidden="true">{p.icon}</span>
+                <span>{p.text}</span>
               </button>
             ))}
           </div>
@@ -172,9 +172,13 @@ You can ask me anything about your career — from what to learn next, to how to
             ))}
             {loading && (
               <div style={{ display: 'flex', gap: '0.875rem', animation: 'fadeSlideIn 0.2s ease' }}>
-                <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', flexShrink: 0 }}>🤖</div>
-                <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '1rem 1rem 1rem 0.25rem', padding: '0.875rem 1.125rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                  {[0, 0.2, 0.4].map((delay, i) => <div key={i} style={{ width: 6, height: 6, background: '#6366f1', borderRadius: '50%', animation: `pulse 1s ${delay}s infinite` }} />)}
+                <div style={{ width: 32, height: 32, background: 'var(--gradient-primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', flexShrink: 0 }}>🤖</div>
+                <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-color)', borderRadius: '1rem 1rem 1rem 0.25rem', padding: '0.875rem 1.125rem' }}>
+                  <div className="typing-indicator">
+                    <div className="typing-dot" />
+                    <div className="typing-dot" />
+                    <div className="typing-dot" />
+                  </div>
                 </div>
               </div>
             )}
@@ -204,7 +208,9 @@ You can ask me anything about your career — from what to learn next, to how to
         <button id="send-message-btn"
           onClick={() => sendMessage()}
           disabled={loading || !input.trim()}
-          style={{ background: loading || !input.trim() ? '#1e293b' : 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: loading || !input.trim() ? '#475569' : '#fff', border: 'none', borderRadius: '0.875rem', padding: '0.875rem 1.5rem', fontSize: '0.9rem', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer', transition: 'all 0.2s ease', fontWeight: 700, flexShrink: 0, height: '62px' }}
+          className={`btn btn-primary`}
+          style={{ borderRadius: '0.875rem', padding: '0.875rem 1.5rem', fontSize: '0.9rem', height: '62px', opacity: loading || !input.trim() ? 0.45 : 1 }}
+          aria-label="Send message"
         >{loading ? '⏳' : '→'}</button>
       </div>
 

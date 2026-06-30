@@ -545,7 +545,6 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s ease' }}>
-      {/* CSS for badge animation */}
       <style>{`
         @keyframes badgeUnlock {
           0% { transform: scale(0.5); opacity: 0; }
@@ -555,6 +554,47 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
         @keyframes pulse-glow {
           0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); }
           50% { box-shadow: 0 0 0 6px rgba(99,102,241,0.2); }
+        }
+        .roadmap-syllabus-grid {
+          display: grid;
+          grid-template-columns: 1.5fr 1fr;
+          gap: 2rem;
+          align-items: flex-start;
+        }
+        .roadmap-week-detail-grid {
+          display: grid;
+          grid-template-columns: 1fr 1.2fr;
+          gap: 1.5rem;
+          align-items: flex-start;
+        }
+        .roadmap-salary-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+          margin-bottom: 1rem;
+        }
+        .roadmap-header-actions {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 0.75rem;
+        }
+        @media (max-width: 850px) {
+          .roadmap-syllabus-grid {
+            grid-template-columns: 1fr !important;
+            gap: 1.5rem !important;
+          }
+          .roadmap-week-detail-grid {
+            grid-template-columns: 1fr !important;
+            gap: 1.25rem !important;
+          }
+          .roadmap-salary-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .roadmap-header-actions {
+            align-items: flex-start !important;
+            width: 100% !important;
+          }
         }
       `}</style>
 
@@ -587,7 +627,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem' }}>
+          <div className="roadmap-header-actions">
             {/* Live readiness meter */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{ textAlign: 'right' }}>
@@ -608,16 +648,6 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
 
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-              <button onClick={handleShare} disabled={shareLoading} style={{
-                fontSize: '0.78rem', fontWeight: '600', padding: '0.4rem 0.85rem',
-                backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)',
-                color: '#a5b4fc', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s ease'
-              }}
-                onMouseEnter={e => { e.target.style.backgroundColor = 'var(--primary)'; e.target.style.color = '#fff'; }}
-                onMouseLeave={e => { e.target.style.backgroundColor = 'rgba(99,102,241,0.1)'; e.target.style.color = '#a5b4fc'; }}
-              >
-                {shareLoading ? '⏳ Sharing...' : '🔗 Share Roadmap'}
-              </button>
               <button onClick={handleExportPDF} disabled={pdfLoading} style={{
                 fontSize: '0.78rem', fontWeight: '600', padding: '0.4rem 0.85rem',
                 backgroundColor: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)',
@@ -706,7 +736,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2rem', alignItems: 'flex-start' }}>
+          <div className="roadmap-syllabus-grid">
             {/* Left: weekly syllabus */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
@@ -740,7 +770,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
                       backgroundColor: 'rgba(255,255,255,0.005)',
                       animation: 'fadeIn 0.2s ease' 
                     }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '1.5rem', alignItems: 'flex-start' }}>
+                      <div className="roadmap-week-detail-grid">
                         {/* Left Column: Topics & Resources */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                           <div>
@@ -956,7 +986,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
               </h3>
 
               {/* Salary Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <div className="roadmap-salary-grid">
                 {[
                   { flag: '🇮🇳', region: 'India Salary Tiers', data: jm.india_salary, color: '#f97316' },
                   { flag: '🌍', region: 'Global Salary Tiers', data: jm.global_salary, color: '#38bdf8' },
@@ -1084,7 +1114,7 @@ export const RoadmapDashboard = ({ roadmapData, onClose, candidateName }) => {
               {jm && <StatCard emoji="💰" label="India Salary" value={jm.india_salary?.formatted || '—'} color="#f97316" />}
               {jm && <StatCard emoji="🌍" label="Global Salary" value={jm.global_salary?.formatted || '—'} color="#38bdf8" />}
               {jm && <StatCard emoji="💼" label="Job Openings" value={formatNumber(jm.estimated_job_openings)} color="#fbbf24" />}
-              <StatCard emoji="🏅" label="Badges Earned" value={`${unlockedBadges.length}/${BADGE_CATALOG.length}`} color="#10b981" />
+              <strong style={{ display: 'none' }} />
               <StatCard emoji="⏱️" label="Total Study Hours" value={`${remainingStudyHours} hrs`} color="#e0f2fe" sub="Remaining time" />
               <StatCard emoji="📅" label="Target Date" value={liveEstCompletionDate} color="#c084fc" sub="Based on workload" />
               <StatCard emoji="⏱️" label="Weekly Workload" value="8 hours" color="#60a5fa" sub="Suggested pace" />

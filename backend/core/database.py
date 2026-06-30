@@ -930,7 +930,7 @@ def award_interview_badge(user_id: str, badge: Dict[str, Any]) -> bool:
                 VALUES (%s, %s, %s, %s, %s, %s, now())
                 ON CONFLICT (user_id, badge_id) DO NOTHING;
             """, (user_id, badge["id"], badge["name"], badge.get("emoji", "🏆"),
-                  badge.get("color", "#6366f1"), badge.get("description", "")))
+                  badge.get("color", "#06b6d4"), badge.get("description", "")))
             return cur.rowcount > 0
 
 

@@ -43,7 +43,6 @@ export const AuthProvider = ({ children }) => {
     const simToken = localStorage.getItem('sim_token');
     const simEmail = localStorage.getItem('sim_email');
     if (simToken && simEmail) {
-      console.log('[AuthProvider] Simulated Developer session found in localStorage');
       const simSession = { access_token: simToken, user: { email: simEmail } };
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSession(simSession);
@@ -72,7 +71,6 @@ export const AuthProvider = ({ children }) => {
 
     // ── 2. Standard Firebase Auth State listener ─────────────────────────────
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log('[AuthProvider] onAuthStateChanged:', firebaseUser?.email || 'No Firebase User');
 
       // Do not override if developer simulation mode is active
       if (localStorage.getItem('sim_token')) return;
@@ -84,7 +82,6 @@ export const AuthProvider = ({ children }) => {
           const currentSession = { access_token: token, user: firebaseUser };
           setSession(currentSession);
 
-          console.log('[AuthProvider] Initializing backend user for:', firebaseUser.email);
 
           // STEP 1: Ensure user exists in DB BEFORE fetching profile.
           // This guarantees FK integrity for all subsequent operations.

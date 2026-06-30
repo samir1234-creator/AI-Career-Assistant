@@ -30,7 +30,7 @@ export const ProtectedRoute = ({ children }) => {
             to { transform: rotate(360deg); }
           }
         `}</style>
-        <p style={{ color: '#94a3b8', fontWeight: '500' }}>Loading AI Career Assistant...</p>
+        <p style={{ color: '#94a3b8', fontWeight: '500' }}>Loading Ilmora...</p>
       </div>
     );
   }
