@@ -11,19 +11,16 @@ export const AuthPage = () => {
     setError('');
     setLoading(true);
     try {
-      const result = await signInWithGoogle();
-      // On production, signInWithRedirect returns null and navigates away.
-      // Keep the loading spinner active during the redirect transition.
-      // On localhost, signInWithPopup returns the user immediately — stop loading.
-      if (result !== null) {
-        setLoading(false);
-      }
-      // If result is null (redirect flow), loading stays true until page navigates.
+      await signInWithGoogle();
+      // onAuthStateChanged in AuthProvider handles user init + navigation.
+      // No need to do anything here — the route will update reactively.
     } catch (err) {
       setError(err.message || 'Google sign-in failed. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
+
 
   
 
