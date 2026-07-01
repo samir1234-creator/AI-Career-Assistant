@@ -12,6 +12,9 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Runtime config: injects window.__ENV__ with real env vars from the server.
+         Must load BEFORE the main module so Firebase and Supabase get real keys. -->
+    <script src="/config.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

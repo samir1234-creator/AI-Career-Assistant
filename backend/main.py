@@ -83,6 +83,35 @@ def health_check():
     """Health check endpoint for monitoring."""
     return {"status": "ok", "version": "9.0.0"}
 
+
+# ── Runtime Config Injection ──────────────────────────────────────────────────
+# Serves all VITE_* env vars as a JavaScript file that sets window.__ENV__.
+# This avoids the Docker build-arg problem: the JS bundle is built WITHOUT
+# baked-in secrets, and the real values are injected at runtime from the server.
+@app.get("/config.js", include_in_schema=False)
+async def serve_runtime_config():
+    """Serves VITE_* env vars as a runtime-injectable JS config for the SPA."""
+    from fastapi.responses import Response as FastAPIResponse
+    import json
+
+    config = {
+        "VITE_FIREBASE_API_KEY":             os.environ.get("VITE_FIREBASE_API_KEY", ""),
+        "VITE_FIREBASE_AUTH_DOMAIN":         os.environ.get("VITE_FIREBASE_AUTH_DOMAIN", ""),
+        "VITE_FIREBASE_PROJECT_ID":          os.environ.get("VITE_FIREBASE_PROJECT_ID", ""),
+        "VITE_FIREBASE_STORAGE_BUCKET":      os.environ.get("VITE_FIREBASE_STORAGE_BUCKET", ""),
+        "VITE_FIREBASE_MESSAGING_SENDER_ID": os.environ.get("VITE_FIREBASE_MESSAGING_SENDER_ID", ""),
+        "VITE_FIREBASE_APP_ID":              os.environ.get("VITE_FIREBASE_APP_ID", ""),
+        "VITE_FIREBASE_MEASUREMENT_ID":      os.environ.get("VITE_FIREBASE_MEASUREMENT_ID", ""),
+        "VITE_SUPABASE_URL":                 os.environ.get("VITE_SUPABASE_URL", ""),
+        "VITE_SUPABASE_ANON_KEY":            os.environ.get("VITE_SUPABASE_ANON_KEY", ""),
+    }
+    js_content = f"window.__ENV__ = {json.dumps(config)};"
+    return FastAPIResponse(
+        content=js_content,
+        media_type="application/javascript",
+        headers={"Cache-Control": "no-store"},
+    )
+
 # ── Static File Serving & React SPA Fallback ──────────────────────────────────
 import os
 from fastapi.staticfiles import StaticFiles
