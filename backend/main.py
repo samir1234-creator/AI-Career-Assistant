@@ -84,16 +84,24 @@ def health_check():
     return {"status": "ok", "version": "9.0.0"}
 
 
-# ── Runtime Config Injection ──────────────────────────────────────────────────
-# Serves all VITE_* env vars as a JavaScript file that sets window.__ENV__.
-# This avoids the Docker build-arg problem: the JS bundle is built WITHOUT
-# baked-in secrets, and the real values are injected at runtime from the server.
-@app.get("/config.js", include_in_schema=False)
-async def serve_runtime_config():
-    """Serves VITE_* env vars as a runtime-injectable JS config for the SPA."""
-    from fastapi.responses import Response as FastAPIResponse
-    import json
+# ── Static File Serving & React SPA Fallback ──────────────────────────────────
+import os
+import json
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi import HTTPException
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+static_dir = os.path.join(current_dir, "static")
+
+
+def _build_runtime_config_script() -> str:
+    """
+    Reads VITE_* env vars from os.environ at request time and returns an
+    inline <script> block that sets window.__ENV__ on the page.
+    This is the most reliable way to inject runtime config into a Docker-
+    deployed SPA — no build-time args needed, no extra HTTP request.
+    """
     config = {
         "VITE_FIREBASE_API_KEY":             os.environ.get("VITE_FIREBASE_API_KEY", ""),
         "VITE_FIREBASE_AUTH_DOMAIN":         os.environ.get("VITE_FIREBASE_AUTH_DOMAIN", ""),
@@ -105,21 +113,18 @@ async def serve_runtime_config():
         "VITE_SUPABASE_URL":                 os.environ.get("VITE_SUPABASE_URL", ""),
         "VITE_SUPABASE_ANON_KEY":            os.environ.get("VITE_SUPABASE_ANON_KEY", ""),
     }
-    js_content = f"window.__ENV__ = {json.dumps(config)};"
-    return FastAPIResponse(
-        content=js_content,
-        media_type="application/javascript",
-        headers={"Cache-Control": "no-store"},
-    )
+    return f'<script>window.__ENV__ = {json.dumps(config)};</script>'
 
-# ── Static File Serving & React SPA Fallback ──────────────────────────────────
-import os
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from fastapi import HTTPException
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-static_dir = os.path.join(current_dir, "static")
+def _serve_index_with_config(index_path: str) -> HTMLResponse:
+    """Reads index.html and injects the runtime config script before </head>."""
+    with open(index_path, "r", encoding="utf-8") as f:
+        html = f.read()
+    config_script = _build_runtime_config_script()
+    # Inject just before </head> so it runs before any module scripts
+    html = html.replace("</head>", f"{config_script}\n</head>", 1)
+    return HTMLResponse(content=html, status_code=200)
+
 
 if os.path.exists(static_dir):
     # Mount the compiled assets folder (js, css, media)
@@ -127,16 +132,17 @@ if os.path.exists(static_dir):
     if os.path.exists(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
-    # Expose individual root static files (like logo_icon.png, favicon.ico)
+    # Expose individual root static files (logo_icon.png, favicon.ico, etc.)
+    # index.html is served with runtime config injected.
     @app.get("/{file_name}")
     async def serve_root_file(file_name: str):
         file_path = os.path.join(static_dir, file_name)
         if os.path.isfile(file_path):
             return FileResponse(file_path)
-        # Fall through to index.html for SPA routes
+        # Fall through to index.html for SPA routes — inject config inline
         index_path = os.path.join(static_dir, "index.html")
         if os.path.exists(index_path):
-            return FileResponse(index_path)
+            return _serve_index_with_config(index_path)
         raise HTTPException(status_code=404, detail="File Not Found")
 
     # Catch-all route to serve SPA index.html for client-side routing (e.g. /dashboard)
@@ -145,10 +151,10 @@ if os.path.exists(static_dir):
         # Exclude backend api and docs requests from catch-all fallback
         if catchall.startswith("api/") or catchall.startswith("docs") or catchall.startswith("openapi.json"):
             raise HTTPException(status_code=404, detail="Not Found")
-            
+
         index_path = os.path.join(static_dir, "index.html")
         if os.path.exists(index_path):
-            return FileResponse(index_path)
+            return _serve_index_with_config(index_path)
         raise HTTPException(status_code=404, detail="Frontend build files not found.")
 
 if __name__ == "__main__":
