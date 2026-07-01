@@ -150,7 +150,7 @@ export default function InterviewSession({ sessionData, interviewType, onBack, o
         });
       }
       setEvaluation(evalResult);
-      //     } catch {
+    } catch (e) {
       console.error('Evaluation failed', e);
       setEvaluation({ overall_score: 0, rating: 'Error', scores: {}, feedback: { strengths: [], improvements: ['Evaluation failed — please check connection'], suggestions: [] } });
     } finally {
