@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from '../hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LogoIcon } from '../components/ui/LogoIcon';
+import { PremiumFooter } from '../components/ui/PremiumFooter';
 
 const NAV_ITEMS = [
   { id: 'dashboard',    path: '/dashboard',     label: 'Dashboard',   icon: '⊞' },
@@ -100,7 +101,7 @@ export const MainLayout = ({ children }) => {
 
           <div className="navbar-actions">
             {/* User avatar + dropdown */}
-            {user && (
+            {user ? (
               <div style={{ position: 'relative' }} ref={dropdownRef}>
                 <button
                   className="avatar-btn"
@@ -228,49 +229,7 @@ export const MainLayout = ({ children }) => {
         </div>
       </main>
 
-      {/* ── Footer ── */}
-      <footer className="footer" role="contentinfo">
-        <div className="footer-inner">
-          <div className="footer-top">
-            <div className="footer-brand">
-              <div className="navbar-logo" style={{ cursor: 'default', marginBottom: 'var(--space-2)' }}>
-                <LogoIcon size={28} style={{ marginRight: '0.5rem' }} />
-                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'var(--text-base)' }}>Ilmora</span>
-              </div>
-              <p>Your personalized AI-powered platform for resume analysis, skill gap identification, and career growth.</p>
-            </div>
-
-            <div>
-              <div className="footer-links">
-                <h4>Platform</h4>
-                <button className="footer-link" onClick={() => navigate('/analyzer')}>Resume Analyzer</button>
-                <button className="footer-link" onClick={() => navigate('/roadmap')}>Learning Roadmap</button>
-                <button className="footer-link" onClick={() => navigate('/interview')}>Interview Prep</button>
-                <button className="footer-link" onClick={() => navigate('/career-coach')}>AI Career Coach</button>
-              </div>
-            </div>
-
-            <div>
-              <div className="footer-links">
-                <h4>Account</h4>
-                <button className="footer-link" onClick={() => navigate('/dashboard')}>Dashboard</button>
-                <button className="footer-link" onClick={() => navigate('/profile')}>Profile</button>
-                {user && <button className="footer-link" onClick={handleSignOut} style={{ color: '#fca5a5' }}>Sign Out</button>}
-              </div>
-            </div>
-          </div>
-
-          <div className="footer-bottom">
-            <p className="footer-copyright">
-              © {new Date().getFullYear()} Ilmora. All rights reserved.
-            </p>
-            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-              <span className="footer-version">v9.0 Production</span>
-            </div>
-          </div>
-        </div>
-      </footer>
-
+      <PremiumFooter />
     </div>
   );
 };

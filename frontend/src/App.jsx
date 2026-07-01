@@ -8,15 +8,23 @@ import { AuthPage } from './pages/AuthPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import ToastProvider from './components/ui/Toast';
+import { FloatingFeedback } from './components/ui/FloatingFeedback';
 import './App.css';
 
-// Lazy load heavy pages for code splitting + faster initial paint
 const Dashboard       = lazy(() => import('./pages/Dashboard.jsx'));
 const AnalyzerPage    = lazy(() => import('./pages/AnalyzerPage.jsx'));
 const RoadmapDashboard = lazy(() => import('./pages/RoadmapDashboard.jsx'));
 const ProfilePage     = lazy(() => import('./pages/ProfilePage.jsx'));
 const InterviewPage   = lazy(() => import('./pages/InterviewPage.jsx'));
 const CareerCoachPage = lazy(() => import('./pages/CareerCoachPage.jsx'));
+
+// Legal & Error Pages
+const AboutPage       = lazy(() => import('./pages/legal/AboutPage.jsx'));
+const PrivacyPage     = lazy(() => import('./pages/legal/PrivacyPage.jsx'));
+const TermsPage       = lazy(() => import('./pages/legal/TermsPage.jsx'));
+const ContactPage     = lazy(() => import('./pages/legal/ContactPage.jsx'));
+const FAQPage         = lazy(() => import('./pages/legal/FAQPage.jsx'));
+const NotFoundPage    = lazy(() => import('./pages/errors/NotFoundPage.jsx'));
 
 /* ── Page Loading Fallback ─────────────────────────────────── */
 const PageLoader = () => (
@@ -205,11 +213,18 @@ function AppContent() {
 
   return (
     <Routes>
-      {/* Auth page — redirect to dashboard if logged in */}
+      {/* Auth page */}
       <Route
         path="/login"
         element={user ? <Navigate to="/dashboard" replace /> : <AuthPage />}
       />
+
+      {/* Public routes wrapped in MainLayout */}
+      <Route path="/about" element={<MainLayout><Suspense fallback={<PageLoader />}><AboutPage /></Suspense></MainLayout>} />
+      <Route path="/privacy" element={<MainLayout><Suspense fallback={<PageLoader />}><PrivacyPage /></Suspense></MainLayout>} />
+      <Route path="/terms" element={<MainLayout><Suspense fallback={<PageLoader />}><TermsPage /></Suspense></MainLayout>} />
+      <Route path="/contact" element={<MainLayout><Suspense fallback={<PageLoader />}><ContactPage /></Suspense></MainLayout>} />
+      <Route path="/faq" element={<MainLayout><Suspense fallback={<PageLoader />}><FAQPage /></Suspense></MainLayout>} />
 
       {/* All protected routes wrapped in MainLayout */}
       <Route
@@ -219,6 +234,7 @@ function AppContent() {
             <MainLayout>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
+                  <Route path="/"             element={<Navigate to="/dashboard" replace />} />
                   <Route path="/dashboard"    element={<Dashboard />} />
                   <Route path="/analyzer"     element={<AnalyzerPage initialTab="profile" />} />
                   <Route path="/ats"          element={<AnalyzerPage initialTab="ats" />} />
@@ -228,7 +244,7 @@ function AppContent() {
                   <Route path="/profile"      element={<ProfilePage />} />
                   <Route path="/interview/*"  element={<InterviewPage />} />
                   <Route path="/career-coach" element={<CareerCoachPage />} />
-                  <Route path="*"             element={<Navigate to="/dashboard" replace />} />
+                  <Route path="*"             element={<NotFoundPage />} />
                 </Routes>
               </Suspense>
             </MainLayout>
@@ -255,6 +271,7 @@ function App() {
       <AuthProvider>
         <ToastProvider>
           <AppContent />
+          <FloatingFeedback />
         </ToastProvider>
       </AuthProvider>
     </ErrorBoundary>
