@@ -6,17 +6,17 @@ import { PremiumFooter } from '../components/ui/PremiumFooter';
 
 const NAV_ITEMS = [
   { id: 'dashboard',    path: '/dashboard',     label: 'Dashboard',   icon: '⊞' },
-  { id: 'analyzer',     path: '/analyzer',      label: 'Analyzer',    icon: '📄' },
+  { id: 'analyzer',     path: '/analyzer',      label: 'Analyzer',    icon: '⚡' },
   { id: 'roadmap',      path: '/roadmap',       label: 'Roadmap',     icon: '🗺️' },
-  { id: 'interview',    path: '/interview',     label: 'Interview',   icon: '🎤' },
-  { id: 'career-coach', path: '/career-coach',  label: 'Coach',       icon: '🤖' },
-  { id: 'profile',      path: '/profile',       label: 'Profile',     icon: '👤' },
+  { id: 'interview',    path: '/interview',     label: 'Interview',   icon: '🎯' },
+  { id: 'career-coach', path: '/career-coach',  label: 'Coach',       icon: '💡' }
 ];
 
 export const MainLayout = ({ children }) => {
   const { user, signOut } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
+
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -24,7 +24,6 @@ export const MainLayout = ({ children }) => {
 
   // Close mobile nav and dropdown on route change
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
     setDropdownOpen(false);
   }, [location.pathname]);
@@ -59,17 +58,15 @@ export const MainLayout = ({ children }) => {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-base)' }}>
-
       {/* ── Navbar ── */}
       <header className={`navbar ${scrolled ? 'scrolled' : ''}`} role="banner">
         <div className="navbar-inner">
-
           {/* Logo */}
           <div
             className="navbar-logo"
             onClick={() => user && navigate('/dashboard')}
             role="link"
-            aria-label="Ilmora – Go to Dashboard"
+            aria-label="Ilmora — Go to Dashboard"
             tabIndex={0}
             onKeyDown={(e) => e.key === 'Enter' && user && navigate('/dashboard')}
           >
@@ -163,6 +160,10 @@ export const MainLayout = ({ children }) => {
                   </div>
                 )}
               </div>
+            ) : (
+              <button className="btn-primary" onClick={() => navigate('/login')} style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+                Sign In
+              </button>
             )}
 
             {/* Mobile hamburger */}
