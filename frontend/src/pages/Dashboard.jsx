@@ -23,7 +23,7 @@ function DashboardSkeleton() {
 function QuickActionCard({ icon, title, desc, onClick, accentColor = '#06b6d4' }) {
   return (
     <div
-      className="quick-action-card"
+      className="quick-action-card premium-card"
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -115,8 +115,8 @@ export const Dashboard = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', animation: 'fadeIn 0.3s ease' }}>
 
       {/* ── Welcome Hero ── */}
-      <div className="dashboard-hero">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-5)', flexWrap: 'wrap' }}>
+      <div className="dashboard-hero aurora-bg" style={{ borderRadius: 'var(--radius-2xl)', padding: 'var(--space-6)', border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)' }}>
+        <div className="aurora-content" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-5)', flexWrap: 'wrap' }}>
           {user?.picture ? (
             <img
               src={user.picture}

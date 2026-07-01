@@ -24,7 +24,7 @@ const StatCard = memo(({
 }) => {
   return (
     <div
-      className={`stat-card ${className}`}
+      className={`stat-card premium-card ${className}`}
       onClick={onClick}
       style={{
         cursor: onClick ? 'pointer' : 'default',
