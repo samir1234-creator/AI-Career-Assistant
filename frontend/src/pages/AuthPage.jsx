@@ -11,10 +11,16 @@ export const AuthPage = () => {
     setError('');
     setLoading(true);
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      // On production, signInWithRedirect returns null and navigates away.
+      // Keep the loading spinner active during the redirect transition.
+      // On localhost, signInWithPopup returns the user immediately — stop loading.
+      if (result !== null) {
+        setLoading(false);
+      }
+      // If result is null (redirect flow), loading stays true until page navigates.
     } catch (err) {
       setError(err.message || 'Google sign-in failed. Please try again.');
-    } finally {
       setLoading(false);
     }
   };

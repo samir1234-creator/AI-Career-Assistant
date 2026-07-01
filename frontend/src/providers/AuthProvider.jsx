@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { 
   onAuthStateChanged, 
-  signInWithPopup, 
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut 
 } from 'firebase/auth';
 import { auth, googleProvider } from '../services/firebase';
@@ -69,7 +71,26 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    // ── 2. Standard Firebase Auth State listener ─────────────────────────────
+    // ── 2. Handle redirect result (fires after Google redirect sign-in) ─────
+    // This must run BEFORE onAuthStateChanged to capture the redirect result.
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          // The redirect was successful — onAuthStateChanged will fire next
+          // with this user, so no extra action needed here.
+          console.log('[AuthProvider] Google redirect sign-in succeeded:', result.user.email);
+        }
+      })
+      .catch((error) => {
+        // Common error: auth/popup-closed-by-user, auth/cancelled-popup-request
+        // These are non-fatal; log and continue.
+        if (error.code !== 'auth/no-auth-event') {
+          console.error('[AuthProvider] Redirect result error:', error.code, error.message);
+        }
+        if (active) setLoading(false);
+      });
+
+    // ── 3. Standard Firebase Auth State listener ─────────────────────────────
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
 
       // Do not override if developer simulation mode is active
@@ -136,9 +157,23 @@ export const AuthProvider = ({ children }) => {
   const signInWithGoogle = async () => {
     localStorage.removeItem('sim_token');
     localStorage.removeItem('sim_email');
+    
+    const isLocalhost = 
+      window.location.hostname === 'localhost' || 
+      window.location.hostname === '127.0.0.1';
+
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      return result.user;
+      if (isLocalhost) {
+        // Use popup on localhost for faster developer experience
+        const result = await signInWithPopup(auth, googleProvider);
+        return result.user;
+      } else {
+        // Use redirect on production — more reliable, avoids popup blockers
+        // The result is handled by getRedirectResult() in the useEffect above
+        await signInWithRedirect(auth, googleProvider);
+        // signInWithRedirect navigates away — nothing to return
+        return null;
+      }
     } catch (error) {
       console.error('Firebase Google login failed:', error);
       throw error;

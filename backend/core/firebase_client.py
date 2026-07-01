@@ -2,16 +2,23 @@ import urllib.request
 import json
 import jwt
 import hashlib
+import time
 from typing import Dict, Any, Optional
 from core.config import settings
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.hazmat.backends import default_backend
 
-_certs_cache = {}
+# Cache Google public certificates with a 23-hour TTL.
+# Firebase rotates its signing certs roughly every 24 h; refreshing at 23 h
+# ensures token verification never fails due to a stale/rotated certificate.
+_CERT_CACHE_TTL = 23 * 60 * 60  # 23 hours in seconds
+_certs_cache: Dict[str, str] = {}
+_certs_fetched_at: float = 0.0
 
 def _get_google_certs():
-    global _certs_cache
-    if _certs_cache:
+    global _certs_cache, _certs_fetched_at
+    # Return cached certs if they are still fresh
+    if _certs_cache and (time.time() - _certs_fetched_at) < _CERT_CACHE_TTL:
         return _certs_cache
         
     url = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
@@ -19,9 +26,14 @@ def _get_google_certs():
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=5) as response:
             _certs_cache = json.loads(response.read().decode())
+            _certs_fetched_at = time.time()
             return _certs_cache
     except Exception as e:
         print(f"Error fetching Google certificates: {str(e)}")
+        # Return stale cache if available (better than nothing on transient network errors)
+        if _certs_cache:
+            print("Warning: Returning stale Google certificates due to fetch failure.")
+            return _certs_cache
         return {}
 
 def verify_firebase_token(token: str) -> Optional[Dict[str, Any]]:
