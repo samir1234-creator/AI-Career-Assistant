@@ -10,6 +10,19 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "dummy-app-id"
 };
 
+// Warn loudly if Firebase env vars are missing (e.g. not set in Render dashboard)
+if (
+  !import.meta.env.VITE_FIREBASE_API_KEY ||
+  import.meta.env.VITE_FIREBASE_API_KEY === 'dummy-api-key'
+) {
+  console.error(
+    '[Firebase] VITE_FIREBASE_API_KEY is missing or using a dummy value.\n' +
+    'Set all VITE_FIREBASE_* environment variables in your Render dashboard ' +
+    'and ensure dockerBuildArgs is configured in render.yaml so they are ' +
+    'forwarded to the Docker build stage.'
+  );
+}
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
@@ -25,3 +38,4 @@ googleProvider.addScope('email');
 googleProvider.addScope('profile');
 // Force account selection to avoid silent auth failures on shared devices
 googleProvider.setCustomParameters({ prompt: 'select_account' });
+
