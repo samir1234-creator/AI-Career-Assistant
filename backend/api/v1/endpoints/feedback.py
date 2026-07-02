@@ -26,11 +26,11 @@ def send_feedback_email(data: FeedbackPayload, client_ip: str):
     smtp_port = int(os.environ.get("SMTP_PORT", 587))
     smtp_user = os.environ.get("SMTP_USER", "")
     smtp_password = os.environ.get("SMTP_PASSWORD", "")
-    support_email = "support@ilmora.com"
+    support_email = "mmdsamir817@gmail.com"
 
     body = f"""
 -----------------------------------------
-ILMORA USER FEEDBACK
+ILMORA USER {data.category.upper()}
 -----------------------------------------
 Name: {data.name or 'Anonymous'}
 Email: {data.email or 'Not provided'}
@@ -51,14 +51,14 @@ IP Address: {client_ip}
 """
 
     if not smtp_server:
-        logger.info(f"Feedback received (SMTP not configured). Logging to console:\n{body}")
+        logger.info(f"{data.category} received (SMTP not configured). Logging to console:\n{body}")
         return
 
     try:
         msg = MIMEMultipart()
         msg['From'] = smtp_user or "no-reply@ilmora.com"
         msg['To'] = support_email
-        msg['Subject'] = f"[{data.category}] ILMORA Feedback: {data.subject}"
+        msg['Subject'] = f"[{data.category}] ILMORA {data.category}: {data.subject}"
         msg.attach(MIMEText(body, 'plain'))
 
         server = smtplib.SMTP(smtp_server, smtp_port)
@@ -92,3 +92,34 @@ async def submit_feedback(payload: FeedbackPayload, request: Request, background
     background_tasks.add_task(send_feedback_email, payload, client_ip)
     
     return {"status": "success", "message": "Feedback submitted successfully."}
+
+class ContactPayload(BaseModel):
+    name: str = Field(default="", max_length=100)
+    email: str = Field(default="", max_length=255)
+    message: str = Field(max_length=5000)
+
+@router.post("/contact")
+async def submit_contact(payload: ContactPayload, request: Request, background_tasks: BackgroundTasks):
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Rate Limiting
+    now = datetime.utcnow().timestamp()
+    if client_ip in rate_limits:
+        last_request = rate_limits[client_ip]
+        if now - last_request < RATE_LIMIT_SECONDS:
+            raise HTTPException(status_code=429, detail="Too many requests. Please wait a moment.")
+    rate_limits[client_ip] = now
+
+    feedback_payload = FeedbackPayload(
+        name=payload.name,
+        email=payload.email,
+        rating=5,
+        category="Contact Us",
+        subject=f"Contact message from {payload.name or payload.email}",
+        message=payload.message
+    )
+
+    # Offload email sending to background task
+    background_tasks.add_task(send_feedback_email, feedback_payload, client_ip)
+    
+    return {"status": "success", "message": "Message sent successfully."}

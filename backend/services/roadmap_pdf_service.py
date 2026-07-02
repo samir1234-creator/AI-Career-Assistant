@@ -49,10 +49,10 @@ def generate_roadmap_pdf(roadmap_data: Dict[str, Any], candidate_name: Optional[
     page_w, page_h = A4
 
     # ── Color Palette ──────────────────────────────────────────────────────────
-    C_BG        = colors.HexColor("#0f172a")
-    C_CARD      = colors.HexColor("#1e293b")
-    C_CARD2     = colors.HexColor("#243044")
-    C_CARD3     = colors.HexColor("#1a2840")
+    C_BG        = colors.white
+    C_CARD      = colors.HexColor("#f8fafc")
+    C_CARD2     = colors.HexColor("#f1f5f9")
+    C_CARD3     = colors.HexColor("#e2e8f0")
     C_PRIMARY   = colors.HexColor("#06b6d4")
     C_PRIMARY2  = colors.HexColor("#10b981")
     C_PRIMARY_D = colors.HexColor("#0891b2")
@@ -64,12 +64,12 @@ def generate_roadmap_pdf(roadmap_data: Dict[str, Any], candidate_name: Optional[
     C_INFO      = colors.HexColor("#06b6d4")
     C_INFO_D    = colors.HexColor("#0891b2")
     C_WHITE     = colors.white
-    C_TEXT      = colors.HexColor("#e2e8f0")
-    C_MUTED     = colors.HexColor("#94a3b8")
+    C_TEXT      = colors.HexColor("#0f172a")
+    C_MUTED     = colors.HexColor("#475569")
     C_SUBTLE    = colors.HexColor("#64748b")
-    C_BORDER    = colors.HexColor("#334155")
-    C_ACCENT    = colors.HexColor("#a5f3fc")
-    C_COVER_BG  = colors.HexColor("#0a0f1e")   # deeper for cover strip
+    C_BORDER    = colors.HexColor("#e2e8f0")
+    C_ACCENT    = colors.HexColor("#0891b2")
+    C_COVER_BG  = colors.HexColor("#f1f5f9")   # light cover strip
 
     # ── Typography Styles ──────────────────────────────────────────────────────
     styles = getSampleStyleSheet()
@@ -81,7 +81,7 @@ def generate_roadmap_pdf(roadmap_data: Dict[str, Any], candidate_name: Optional[
     cover_eyebrow = mk("CoverEyebrow", fontSize=9, textColor=C_ACCENT,
                         fontName="Helvetica", spaceAfter=6, alignment=TA_CENTER,
                         letterSpacing=2)
-    cover_title   = mk("CoverTitle",  "Heading1", fontSize=30, textColor=C_WHITE,
+    cover_title   = mk("CoverTitle",  "Heading1", fontSize=30, textColor=C_TEXT,
                         fontName="Helvetica-Bold", spaceAfter=4, alignment=TA_CENTER,
                         leading=38)
     cover_role    = mk("CoverRole",   fontSize=15, textColor=C_ACCENT,
@@ -93,7 +93,7 @@ def generate_roadmap_pdf(roadmap_data: Dict[str, Any], candidate_name: Optional[
                         leading=12)
 
     # Headings
-    h1 = mk("H1", "Heading1", fontSize=17, textColor=C_WHITE,
+    h1 = mk("H1", "Heading1", fontSize=17, textColor=C_TEXT,
              fontName="Helvetica-Bold", spaceBefore=2, spaceAfter=4, leading=22)
     h2 = mk("H2", "Heading2", fontSize=12, textColor=C_ACCENT,
              fontName="Helvetica-Bold", spaceBefore=8, spaceAfter=4, leading=16)

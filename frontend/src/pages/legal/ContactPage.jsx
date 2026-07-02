@@ -1,19 +1,24 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { CONFIG } from '../../constants/config';
 
 export const ContactPage = () => {
   useEffect(() => { window.scrollTo(0, 0); }, []);
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState('idle'); // idle, loading, success, error
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('loading');
-    // Simulate form submission to support@ilmora.com
-    setTimeout(() => {
+    try {
+      await axios.post(`${CONFIG.API_URL}/feedback/contact`, formData);
       setStatus('success');
       setFormData({ name: '', email: '', message: '' });
       setTimeout(() => setStatus('idle'), 5000);
-    }, 1500);
+    } catch (error) {
+      console.error("Failed to send contact message:", error);
+      setStatus('error');
+    }
   };
 
   return (

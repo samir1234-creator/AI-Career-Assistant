@@ -20,10 +20,11 @@ class ExtractionService:
         # Step 1: Pre-process text (clean markdown links of format [text](url) to just text)
         cleaned_text = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'\1', text_content)
         
-        # Step 2: Extract Contact Details
+        # Step 2: Extract Contact Details and Links
         email = ExtractionService._extract_email(cleaned_text)
         phone = ExtractionService._extract_phone(cleaned_text)
         linkedin = ExtractionService._extract_linkedin(cleaned_text)
+        links = ExtractionService._extract_all_links(cleaned_text)
         
         # Step 3: Split text into lines for Name and Section parsing
         lines = [line.strip() for line in cleaned_text.split('\n')]
@@ -47,6 +48,7 @@ class ExtractionService:
             email=email,
             phone=phone,
             linkedin=linkedin,
+            links=links,
             skills=skills,
             education=education,
             projects=projects,
@@ -84,6 +86,19 @@ class ExtractionService:
         if match:
             return match.group(0).strip()
         return None
+
+    @staticmethod
+    def _extract_all_links(text: str) -> List[str]:
+        """Extracts all URLs found in the text."""
+        url_pattern = r'https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)'
+        matches = re.findall(url_pattern, text)
+        
+        # Also look for domain-style links without http:// like github.com/user
+        domain_pattern = r'(?:github\.com|linkedin\.com|instagram\.com|x\.com|twitter\.com|discord\.com|discord\.gg)/[a-zA-Z0-9_-]+/?'
+        domain_matches = re.findall(domain_pattern, text, re.IGNORECASE)
+        
+        all_links = list(set(matches + domain_matches))
+        return [link for link in all_links if link]
 
     @staticmethod
     def _extract_name(lines: List[str]) -> Optional[str]:

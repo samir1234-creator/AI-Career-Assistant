@@ -11,6 +11,7 @@ class ResumeExtractionData(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
     linkedin: Optional[str] = None
+    links: List[str] = Field(default_factory=list)
     skills: List[str] = Field(default_factory=list)
     education: List[str] = Field(default_factory=list)
     projects: List[str] = Field(default_factory=list)

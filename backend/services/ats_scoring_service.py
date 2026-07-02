@@ -194,22 +194,47 @@ class ContactInfoScoringRule(ScoringRule):
             score += 1.5
             present_fields.append("LinkedIn")
             
-        combined_text = (data.linkedin or "") + " " + " ".join(data.projects)
-        
-        # Check for GitHub profile (max 2 points)
+        # Analyze links for different platforms
         has_github = False
-        if "github" in combined_text.lower():
-            has_github = True
-            
-        # Check for Portfolio link (max 2 points)
         has_portfolio = False
+        has_other_socials = False
+        social_platforms = []
+        
         portfolio_patterns = [r'\bportfolio\b', r'\bpersonal website\b', r'github\.io', r'vercel\.app', r'netlify\.app', r'pages\.dev']
-        for pattern in portfolio_patterns:
-            if re.search(pattern, combined_text.lower()):
-                has_portfolio = True
-                break
+        
+        for link in data.links:
+            link_lower = link.lower()
+            if "github.com" in link_lower:
+                has_github = True
+            elif "linkedin.com" in link_lower and "LinkedIn" not in present_fields:
+                present_fields.append("LinkedIn")
+                score += 1.5
+            elif "instagram.com" in link_lower:
+                social_platforms.append("Instagram")
+                has_other_socials = True
+            elif "x.com" in link_lower or "twitter.com" in link_lower:
+                social_platforms.append("X/Twitter")
+                has_other_socials = True
+            elif "discord.com" in link_lower or "discord.gg" in link_lower:
+                social_platforms.append("Discord")
+                has_other_socials = True
+            else:
+                for pattern in portfolio_patterns:
+                    if re.search(pattern, link_lower):
+                        has_portfolio = True
+                        break
+        
+        # Fallback check on combined text if links list missed something
+        combined_text = (data.linkedin or "") + " " + " ".join(data.projects)
+        if not has_github and "github" in combined_text.lower():
+            has_github = True
+        if not has_portfolio:
+            for pattern in portfolio_patterns:
+                if re.search(pattern, combined_text.lower()):
+                    has_portfolio = True
+                    break
                 
-        if score == 6.0:
+        if score >= 6.0:
             strengths.append("Basic contact details available")
         else:
             missing = []
@@ -233,8 +258,12 @@ class ContactInfoScoringRule(ScoringRule):
         else:
             weaknesses.append("Portfolio website missing")
             recommendations.append("Add a personal portfolio website link to present your projects visually")
+
+        if has_other_socials:
+            # We don't necessarily award points for Instagram/X/Discord, but we acknowledge them
+            strengths.append(f"Additional social profiles included ({', '.join(set(social_platforms))})")
             
-        return int(score), max_score, strengths, weaknesses, recommendations
+        return int(min(score, max_score)), max_score, strengths, weaknesses, recommendations
 
 class ATSScoringService:
     def __init__(self):

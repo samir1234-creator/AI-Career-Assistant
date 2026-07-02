@@ -6,6 +6,7 @@ class ATSScoringRequest(BaseModel):
     email: Optional[str] = Field(None, description="Candidate email address")
     phone: Optional[str] = Field(None, description="Candidate phone number")
     linkedin: Optional[str] = Field(None, description="Candidate LinkedIn profile URL")
+    links: List[str] = Field(default_factory=list, description="List of URLs found in resume")
     skills: List[str] = Field(default_factory=list, description="List of technical skills")
     projects: List[str] = Field(default_factory=list, description="List of project entries/descriptions")
     education: List[str] = Field(default_factory=list, description="List of education records")
