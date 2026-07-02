@@ -22,9 +22,9 @@ class FeedbackPayload(BaseModel):
 
 def send_feedback_email(data: FeedbackPayload, client_ip: str):
     # Attempt to use SMTP if configured, else just log it (useful for local dev)
-    smtp_server = os.environ.get("SMTP_SERVER", "")
+    smtp_server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
     smtp_port = int(os.environ.get("SMTP_PORT", 587))
-    smtp_user = os.environ.get("SMTP_USER", "")
+    smtp_user = os.environ.get("SMTP_USER", "mmdsamir817@gmail.com")
     smtp_password = os.environ.get("SMTP_PASSWORD", "")
     support_email = "mmdsamir817@gmail.com"
 
@@ -76,7 +76,7 @@ IP Address: {client_ip}
 rate_limits = {}
 RATE_LIMIT_SECONDS = 60
 
-@router.post("/")
+@router.post("")
 async def submit_feedback(payload: FeedbackPayload, request: Request, background_tasks: BackgroundTasks):
     client_ip = request.client.host if request.client else "unknown"
     
